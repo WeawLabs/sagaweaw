@@ -1,0 +1,52 @@
+{
+  "properties": [
+    {
+      "name": "sagaweaw.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Enables or disables Sagaweaw entirely. Set to false in specific test profiles if needed."
+    },
+    {
+      "name": "sagaweaw.dashboard.mode",
+      "type": "java.lang.String",
+      "defaultValue": "standalone",
+      "description": "Dashboard mode. 'standalone' serves on a dedicated port. 'embedded' serves under the application server on a configurable path."
+    },
+    {
+      "name": "sagaweaw.dashboard.port",
+      "type": "java.lang.Integer",
+      "defaultValue": 8484,
+      "description": "Port for the dashboard in standalone mode. Default: 8484."
+    },
+    {
+      "name": "sagaweaw.dashboard.path",
+      "type": "java.lang.String",
+      "defaultValue": "/sagaweaw",
+      "description": "Context path for the dashboard in embedded mode."
+    },
+    {
+      "name": "sagaweaw.retry.max-attempts",
+      "type": "java.lang.Integer",
+      "defaultValue": 3,
+      "description": "Default maximum retry attempts for steps that do not define their own RetryPolicy."
+    },
+    {
+      "name": "sagaweaw.retry.polling-interval-ms",
+      "type": "java.lang.Long",
+      "defaultValue": 2000,
+      "description": "How often (in milliseconds) the RetryScheduler polls for steps to retry."
+    },
+    {
+      "name": "sagaweaw.outbox.polling-interval-ms",
+      "type": "java.lang.Long",
+      "defaultValue": 1000,
+      "description": "How often (in milliseconds) the OutboxRelay polls for unpublished messages."
+    },
+    {
+      "name": "sagaweaw.outbox.batch-size",
+      "type": "java.lang.Integer",
+      "defaultValue": 100,
+      "description": "Maximum number of outbox messages published per polling cycle."
+    }
+  ]
+}

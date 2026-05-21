@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build, Test & Quality Gates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and run all checks
+        # verify = compile + unit tests + integration tests + spotbugs + checkstyle
+        run: ./mvnw verify --no-transfer-progress
+
+      - name: Upload SpotBugs report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-report
+          path: '**/target/spotbugsXml.xml'
+
+      - name: Upload Checkstyle report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: '**/target/checkstyle-result.xml'

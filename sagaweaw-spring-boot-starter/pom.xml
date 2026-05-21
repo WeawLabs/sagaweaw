@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>dev.sagaweaw</groupId>
+        <artifactId>sagaweaw-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>sagaweaw-spring-boot-starter</artifactId>
+    <name>Sagaweaw Spring Boot Starter</name>
+    <description>
+        Auto-configures Sagaweaw for Spring Boot applications.
+        Add this as the only dependency — everything else is handled automatically.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>dev.sagaweaw</groupId>
+            <artifactId>sagaweaw-spring</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+            spring-boot-autoconfigure is needed so Spring Boot finds
+            and processes AutoConfiguration.imports at startup.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!--
+            Optional: generates IDE metadata for sagaweaw.* properties
+            (auto-completion in application.properties / application.yml).
+            compile-only — not shipped in the final JAR.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>

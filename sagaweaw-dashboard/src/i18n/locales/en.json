@@ -1,0 +1,112 @@
+{
+  "header": {
+    "feed": "Feed",
+    "metrics": "Metrics",
+    "deadLetters": "Dead Letters",
+    "live": "live",
+    "settings": "Settings",
+    "docs": "Documentation"
+  },
+  "status": {
+    "COMPLETED":    "✓ Completed",
+    "FAILED":       "✕ Failed",
+    "COMPENSATED":  "↩ Compensated",
+    "COMPENSATING": "↩ Compensating",
+    "EXECUTING":    "● Executing",
+    "STARTED":      "○ Started",
+    "PENDING":      "○ Pending",
+    "SKIPPED":      "— Skipped"
+  },
+  "metrics": {
+    "today":        "Today",
+    "completed":    "Completed",
+    "failed":       "Failed",
+    "running":      "Running",
+    "compensated":  "Compensated",
+    "deadLetters":  "Dead Letters",
+    "rate":         "Success rate",
+    "bySaga":       "By saga type"
+  },
+  "feed": {
+    "allStatuses":       "All statuses",
+    "statuses": {
+      "STARTED":      "Started",
+      "EXECUTING":    "Executing",
+      "COMPLETED":    "Completed",
+      "COMPENSATING": "Compensating",
+      "COMPENSATED":  "Compensated",
+      "FAILED":       "Failed"
+    },
+    "filterPlaceholder": "Filter by saga name…",
+    "counter":           "{{count}} sagas · refreshes every 3s",
+    "loading":           "Loading…",
+    "loadError":         "Failed to load",
+    "empty":             "No sagas found",
+    "inProgress":        "running",
+    "steps":             "{{done}}/{{total}} steps",
+    "agoSeconds":        "{{n}}s ago",
+    "agoMinutes":        "{{n}}m ago",
+    "counterLive":       "{{count}} sagas · live",
+    "page":              "Page {{n}}"
+  },
+  "auth": {
+    "title":       "Sagaweaw Dashboard",
+    "subtitle":    "Paste the access token from your application.properties",
+    "placeholder": "Token",
+    "submit":      "Sign in",
+    "error403":    "Invalid token. Check sagaweaw.dashboard.token in application.properties.",
+    "errorOther":  "Could not connect to the server."
+  },
+  "detail": {
+    "loading":           "Loading…",
+    "notFound":          "Saga not found",
+    "breadcrumb":        "Feed",
+    "startedAt":         "Started {{time}} · Total duration {{duration}}",
+    "steps":             "Steps",
+    "duration":          "Duration",
+    "created":           "Created",
+    "version":           "Version",
+    "tabTimeline":       "Timeline",
+    "tabContext":        "Context",
+    "legendCompleted":   "Completed",
+    "legendCompensated": "Compensated / Waiting",
+    "legendFailed":      "Failed",
+    "compensatedLabel":  "compensated",
+    "attempt":           "attempt {{current}}/{{max}}",
+    "attemptOpen":       "attempt {{current}}",
+    "nextRetry":         "Next retry: {{time}}"
+  },
+  "sidebar": {
+    "filters":         "Filters",
+    "outboxHealth":    "Outbox Health",
+    "outboxHealthy":   "Healthy",
+    "outboxPending":   "{{n}} pending",
+    "retryQueue":      "Retry Queue",
+    "retryQueueEmpty": "No steps awaiting retry",
+    "attempt":         "attempt {{current}}/{{max}}",
+    "retrySoon":       "any moment",
+    "retryIn":         "in {{time}}",
+    "collapse":        "Collapse",
+    "expand":          "Expand"
+  },
+  "rightPanel": {
+    "avg":                "avg",
+    "stepTimes":          "Step times",
+    "integrationsNote":   "MDC, Prometheus and Micrometer configured automatically.",
+    "noStepStats":        "No data yet"
+  },
+  "dl": {
+    "title":           "Dead Letter Queue",
+    "empty":           "No pending dead letters",
+    "loadError":       "Failed to load dead letters",
+    "reprocessError":  "Failed to reprocess",
+    "reprocess":       "Reprocess",
+    "reprocessing":    "Reprocessing…",
+    "expand":          "View trace",
+    "collapse":        "Close",
+    "trace":           "Stack trace",
+    "expandCtx":       "View context",
+    "collapseCtx":     "Close context",
+    "context":          "Context snapshot"
+  }
+}

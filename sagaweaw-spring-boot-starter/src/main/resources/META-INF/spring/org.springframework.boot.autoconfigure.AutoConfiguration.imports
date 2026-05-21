@@ -1,0 +1,3 @@
+io.sagaweaw.spring.config.SagaJpaAutoConfiguration
+io.sagaweaw.spring.config.SagaFlywayAutoConfiguration
+io.sagaweaw.spring.config.SagaAutoConfiguration

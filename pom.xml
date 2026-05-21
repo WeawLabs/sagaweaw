@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ============================================================
+         PARENT — Spring Boot BOM
+         Inherits all managed dependency versions from Spring Boot
+         ============================================================ -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.6</version>
+        <relativePath/>
+    </parent>
+
+    <!-- ============================================================
+         PROJECT IDENTITY
+         ============================================================ -->
+    <groupId>dev.sagaweaw</groupId>
+    <artifactId>sagaweaw-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>Sagaweaw</name>
+    <description>Distributed saga orchestration for Spring Boot</description>
+    <url>https://github.com/amosjuda/sagaweaw</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>amosjuda</id>
+            <name>Amos Juda</name>
+            <email>amosjudasilva@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/amosjuda/sagaweaw.git</connection>
+        <developerConnection>scm:git:ssh://github.com/amosjuda/sagaweaw.git</developerConnection>
+        <url>https://github.com/amosjuda/sagaweaw</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <!-- ============================================================
+         MODULES — build order matters: core before spring before starter
+         sagaweaw-dashboard is React/Node — not a Maven module
+         ============================================================ -->
+    <modules>
+        <module>sagaweaw-core</module>
+        <module>sagaweaw-spring</module>
+        <module>sagaweaw-spring-boot-starter</module>
+        <module>sagaweaw-test</module>
+        <module>sagaweaw-examples</module>
+    </modules>
+
+    <!-- ============================================================
+         CENTRALIZED VERSIONS — change here, reflects across all modules
+         testcontainers.version overrides the version managed by Spring Boot BOM
+         ============================================================ -->
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <postgresql.version>42.7.3</postgresql.version>
+        <flyway.version>10.15.0</flyway.version>
+        <testcontainers.version>1.21.3</testcontainers.version>
+        <awaitility.version>4.2.1</awaitility.version>
+
+        <!-- Static analysis versions -->
+        <spotbugs.version>4.8.3</spotbugs.version>
+        <checkstyle.version>10.17.0</checkstyle.version>
+        <error-prone.version>2.28.0</error-prone.version>
+    </properties>
+
+    <!-- ============================================================
+         DEPENDENCY MANAGEMENT — declare versions once, use in modules without version
+         ============================================================ -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- Internal modules — always pinned to the same version -->
+            <dependency>
+                <groupId>dev.sagaweaw</groupId>
+                <artifactId>sagaweaw-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.sagaweaw</groupId>
+                <artifactId>sagaweaw-spring</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>dev.sagaweaw</groupId>
+                <artifactId>sagaweaw-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- Awaitility — async assertions in integration tests -->
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ============================================================
+         COMMON DEPENDENCIES — available in every module
+         ============================================================ -->
+    <dependencies>
+
+        <!-- Lombok — @Slf4j and @Builder available in all modules -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JUnit 5 + Mockito + AssertJ — test foundation for all modules -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ============================================================
+         BUILD — compiler and quality gate plugins for all modules
+         ============================================================ -->
+    <build>
+        <pluginManagement>
+            <plugins>
+
+                <!-- Java 21 compiler — <release> is stricter than source/target:
+                     prevents use of APIs removed from the target JDK version -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <release>21</release>
+                        <compilerArgs>
+                            <!-- Error Prone — compile-time bug detection (Java equivalent of Detekt) -->
+                            <arg>-XDcompilePolicy=simple</arg>
+                            <arg>-Xplugin:ErrorProne</arg>
+                        </compilerArgs>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </path>
+                            <path>
+                                <groupId>com.google.errorprone</groupId>
+                                <artifactId>error_prone_core</artifactId>
+                                <version>${error-prone.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+
+                <!-- Sources JAR — required by Maven Central; IDEs use it to show lib source -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Javadoc JAR — required by Maven Central; -quiet keeps output clean -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <configuration>
+                        <release>21</release>
+                        <quiet>true</quiet>
+                        <doclint>none</doclint>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Release — automates version bump, git tag, and deploy to Maven Central
+                     Usage: mvn release:prepare release:perform -Prelease
+                     - release:prepare  → removes -SNAPSHOT, commits, tags v1.x.x, bumps to next SNAPSHOT
+                     - release:perform  → checks out the tag and runs mvn deploy -Prelease -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <releaseProfiles>release</releaseProfiles>
+                        <goals>deploy</goals>
+                        <tagNameFormat>v@{project.version}</tagNameFormat>
+                        <scmCommentPrefix>[release] </scmCommentPrefix>
+                    </configuration>
+                </plugin>
+
+                <!-- Surefire — unit tests (mvn test) -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                </plugin>
+
+                <!-- Failsafe — integration tests with Testcontainers (mvn verify)
+                     Naming convention: *IT.java or *IntegrationTest.java -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- SpotBugs — runtime bug pattern detection -->
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Checkstyle — enforces consistent code style across modules -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.4.0</version>
+                    <configuration>
+                        <configLocation>checkstyle.xml</configLocation>
+                        <failsOnError>true</failsOnError>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- ============================================================
+         PROFILES
+         release: activated only for mvn deploy -Prelease
+         Signs every artifact with GPG and uploads to Maven Central.
+         Requires: GPG key in keyring + OSSRH credentials in settings.xml
+         ============================================================ -->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+
+                    <!-- GPG signing — Maven Central rejects unsigned artifacts -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Key fingerprint set via -Dgpg.keyname=FINGERPRINT or settings.xml -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Maven Central Publisher (new portal since 2024, replaces OSSRH staging) -->
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.7.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <!-- Credentials: CENTRAL_USERNAME + CENTRAL_PASSWORD in settings.xml
+                                 or environment variables for CI -->
+                            <publishingServerId>central</publishingServerId>
+                            <!-- autoPublish=false: review on portal before releasing to the world -->
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                        </configuration>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

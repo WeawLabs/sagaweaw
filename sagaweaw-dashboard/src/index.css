@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Design tokens — canal RGB (sem alpha) para suporte a
+   modificadores de opacidade do Tailwind (bg-accent/20, etc.)
+   ============================================================ */
+
+:root {
+  /* light */
+  --canvas:  250 248 245;   /* #FAF8F5 — off-white quente */
+  --surface: 255 255 255;   /* branco */
+  --accent:  217 158 106;   /* dourado */
+  --ink:      26  26  26;   /* quase preto */
+  --border:  221 208 188;   /* #DDD0BC — bege borda suave */
+  --muted:   236 230 218;   /* #ECE6DA — bege hover suave */
+  --ok:       76 175  80;
+  --warn:    245 166  35;
+  --fail:    229  57  53;
+  --sidebar: 243 237 227;   /* #F3EDE3 — bege claríssimo */
+
+  /* tons de cinza (grays) para texto secundário — light */
+  --gray-subtle:    107 114 128;   /* ~gray-500 */
+  --gray-secondary:  75  85  99;   /* ~gray-600 */
+  --gray-strong:     55  65  81;   /* ~gray-700 */
+}
+
+html.dark {
+  /* dark — fundo quase preto com leve calor, detalhes em bege/dourado */
+  --canvas:   15  14  11;   /* preto quente */
+  --surface:  27  25  20;   /* cartão escuro quente */
+  --accent:  217 158 106;   /* dourado (igual — destaca mais no escuro) */
+  --ink:     237 229 212;   /* branco quente / bege claro */
+  --border:   48  44  34;   /* borda escura com tom bege */
+  --muted:    35  32  26;   /* hover escuro */
+  --ok:       76 175  80;
+  --warn:    245 166  35;
+  --fail:    229  57  53;
+  --sidebar:  24  22  17;
+
+  /* grays invertidos para dark — claros, com calor */
+  --gray-subtle:    175 165 150;
+  --gray-secondary: 195 185 170;
+  --gray-strong:    215 205 190;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    background-color: rgb(var(--canvas));
+    font-family: system-ui, sans-serif;
+    color: rgb(var(--ink));
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  /* sobrescreve os grays do Tailwind em dark mode automaticamente */
+  html.dark .text-gray-400 { color: rgb(var(--gray-subtle));    }
+  html.dark .text-gray-500 { color: rgb(var(--gray-subtle));    }
+  html.dark .text-gray-600 { color: rgb(var(--gray-secondary)); }
+  html.dark .text-gray-700 { color: rgb(var(--gray-strong));    }
+}
+
+@layer components {
+  /* Linha vertical da timeline */
+  .timeline-track {
+    @apply relative pl-7;
+  }
+  .timeline-track::before {
+    content: '';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    bottom: 8px;
+    width: 1.5px;
+    background: rgb(var(--border));
+  }
+
+  /* Bolinha de indicador de status */
+  .status-dot { @apply w-[7px] h-[7px] rounded-full flex-shrink-0 mt-[3px]; }
+  .status-dot-ok   { background: rgb(var(--ok));   }
+  .status-dot-warn { background: rgb(var(--warn));  }
+  .status-dot-fail { background: rgb(var(--fail));  }
+
+  /* Círculo de estado na timeline */
+  .step-circle {
+    @apply w-[22px] h-[22px] rounded-full flex items-center justify-center
+           text-[11px] flex-shrink-0 z-10 -ml-7 mt-[1px];
+  }
+  .step-circle-completed   { @apply bg-ink text-canvas; }
+  .step-circle-failed      { background: rgb(var(--accent)); @apply text-ink; }
+  .step-circle-compensated { @apply text-ink border border-accent; background: rgb(var(--canvas)); }
+  .step-circle-executing   {
+    background: rgb(var(--canvas));
+    @apply border border-ink;
+    animation: pulse-ring 1.4s infinite;
+  }
+
+  /* Card de erro com borda esquerda dourada */
+  .error-card {
+    @apply mt-2 px-4 py-3 rounded-lg leading-relaxed;
+    background: rgb(var(--muted));
+    border-left: 3px solid rgb(var(--accent));
+  }
+}
+
+@layer utilities {
+  .animate-status-pulse {
+    animation: status-pulse 1.4s infinite;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: transparent; border-radius: 99px; transition: background 0.2s; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--accent) / 0.65); }
+
+.scrollbar-subtle:hover::-webkit-scrollbar-thumb,
+.scrollbar-subtle::-webkit-scrollbar-thumb:active { background: rgb(var(--accent) / 0.45); }
+
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217,158,106,.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(217,158,106,0); }
+}
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1;  }
+  50%       { opacity: .4; }
+}

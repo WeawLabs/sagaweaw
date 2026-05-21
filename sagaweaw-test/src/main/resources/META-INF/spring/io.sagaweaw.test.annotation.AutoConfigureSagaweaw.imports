@@ -1,0 +1,9 @@
+org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
+org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
+org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+io.sagaweaw.spring.config.SagaJpaAutoConfiguration
+io.sagaweaw.spring.config.SagaFlywayAutoConfiguration
+io.sagaweaw.spring.config.SagaAutoConfiguration
+io.sagaweaw.test.autoconfigure.SagaTestAutoConfiguration
