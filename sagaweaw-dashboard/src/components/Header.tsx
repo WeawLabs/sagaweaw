@@ -11,7 +11,7 @@ const LANGS = [
   { code: 'en',    label: 'EN' },
 ] as const
 
-const DOCS_URL        = 'https://github.com/amosjuda/sagaweaw'
+const DOCS_URL        = 'https://doc.sagaweaw.dev'
 const DISCUSSIONS_URL = 'https://github.com/amosjuda/sagaweaw/discussions'
 
 function MoonIcon() {

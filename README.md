@@ -4,7 +4,7 @@
 
 ---
 
-📖 **[Full Documentation](#)** — step types in depth, all configuration properties, WebSocket API, Dead Letter Queue, architecture decisions, and more.
+📖 **[Full Documentation](https://doc.sagaweaw.dev)** — step types in depth, all configuration properties, WebSocket API, Dead Letter Queue, architecture decisions, and more.
 
 [README em Português](README.pt-BR.md) · [Issues](https://github.com/amosjuda/sagaweaw/issues)
 
