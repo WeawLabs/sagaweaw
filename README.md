@@ -1,43 +1,35 @@
+<div align="center">
+
 # Sagaweaw
 
-**Distributed saga orchestration for Spring Boot — automatic compensation, retry, and built-in dashboard.**
+**Saga orchestration for Spring Boot. No new servers. No new concepts. Just your database.**
+
+[![Maven Central](https://img.shields.io/maven-central/v/dev.sagaweaw/sagaweaw-spring-boot-starter?color=blue)](https://central.sonatype.com/artifact/dev.sagaweaw/sagaweaw-spring-boot-starter)
+[![CI](https://github.com/amosjuda/sagaweaw/actions/workflows/ci.yml/badge.svg)](https://github.com/amosjuda/sagaweaw/actions)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
+[![Java](https://img.shields.io/badge/Java-21+-orange)](https://openjdk.org/)
+
+📖 [Documentation](https://doc.sagaweaw.dev) · [README em Português](README.pt-BR.md) · [Discussions](https://github.com/amosjuda/sagaweaw/discussions) · [Issues](https://github.com/amosjuda/sagaweaw/issues)
+
+</div>
 
 ---
 
-📖 **[Full Documentation](https://doc.sagaweaw.dev)** — step types in depth, all configuration properties, WebSocket API, Dead Letter Queue, architecture decisions, and more.
+## The problem every microservice team faces
 
-[README em Português](README.pt-BR.md) · [Issues](https://github.com/amosjuda/sagaweaw/issues)
+Payment charged. Inventory reserved. Then the shipping service times out.
+
+Now what? You have money taken, stock locked, and no shipment. If you're lucky, someone wrote a manual recovery script. If you're not, a support ticket shows up at 2am.
+
+**Most teams handle this with a mix of flags, schedulers, and hope. It always breaks in production.**
+
+The saga pattern solves this — but every existing tool makes you pay a steep price: a new cluster to operate (Temporal), a steep learning curve (Axon), or a platform you can't see inside (Eventuate).
+
+Sagaweaw is different. It runs on the PostgreSQL, MySQL, or H2 you already have. One dependency. Zero extra infrastructure.
 
 ---
 
-## The problem
-
-You have 3 microservices. Payment charged. Inventory reserved. Shipment creation fails.
-
-How do you undo the payment and release the inventory — reliably, automatically, with full visibility? Most teams write that logic by hand. It breaks in production.
-
----
-
-## Quickstart
-
-**1. Add the dependencies**
-
-```xml
-<dependency>
-    <groupId>dev.sagaweaw</groupId>
-    <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.1</version>
-</dependency>
-<!-- Flyway is required for automatic schema creation -->
-<dependency>
-    <groupId>org.flywaydb</groupId>
-    <artifactId>flyway-core</artifactId>
-    <scope>runtime</scope>
-</dependency>
-<!-- Add flyway-database-postgresql if using PostgreSQL -->
-```
-
-**2. Write your saga** — keep the class in the same package as the services it uses
+## See it in action
 
 ```java
 @Saga(name = "order-processing")
@@ -69,15 +61,41 @@ public class OrderSaga implements SagaDefinition<OrderContext> {
 }
 ```
 
-Step types are inferred automatically: `.invoke()` + `.compensate()` = **COMPENSABLE** (undoable); `.invoke()` only = **PIVOT** (point of no return); `.invoke()` + infinite retry + no compensate = **RETRIABLE**.
+If `create-shipment` fails, Sagaweaw automatically calls `refund()` and `release()` in reverse order — with full persistence, retry with exponential backoff, and audit trail. You write the business logic. Sagaweaw handles everything else.
+
+Step types are inferred from what you declare:
+- `.invoke()` + `.compensate()` → **COMPENSABLE** — can be undone
+- `.invoke()` only → **PIVOT** — point of no return
+- `.invoke()` + infinite retry + no compensate → **RETRIABLE** — keeps trying until it succeeds
+
+---
+
+## Quickstart
+
+**1. Add the dependency**
+
+```xml
+<dependency>
+    <groupId>dev.sagaweaw</groupId>
+    <artifactId>sagaweaw-spring-boot-starter</artifactId>
+    <version>1.0.1</version>
+</dependency>
+<!-- Required for automatic schema creation -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-core</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<!-- Add flyway-database-postgresql if using PostgreSQL -->
+```
+
+**2. Write your saga** (the class above is all you need)
 
 **3. Configure the token**
 
-Generate a secret: `openssl rand -hex 32`
-
 ```bash
-# .env  — never commit this file
-SAGAWEAW_TOKEN=<your-generated-token>
+# .env — never commit this file
+SAGAWEAW_TOKEN=$(openssl rand -hex 32)
 ```
 
 ```properties
@@ -86,76 +104,65 @@ sagaweaw.observability.token=${SAGAWEAW_TOKEN}
 sagaweaw.kafka.enabled=false
 ```
 
-> ⚠️ Always use `${SAGAWEAW_TOKEN}` in `application.properties` — never paste the token directly. Anyone with repo access would have access to your observability API.
-
 **4. Start it**
 
 ```java
 sagaManager.start(OrderSaga.class, new OrderContext(orderId, customerId, itemId, quantity, amount));
 ```
 
-If `create-shipment` fails, Sagaweaw automatically calls `paymentService.refund()` and `inventoryService.release()` in reverse order, with full persistence and audit trail.
+That's it. Sagaweaw creates the schema, registers your saga, and handles the rest.
 
 ---
 
-## Integration with your existing stack
+## What you get out of the box
 
-Your sagas appear automatically in the tools you already use — no extra configuration.
+### Real-time debug dashboard
+
+Open `http://localhost:8484`, enter your token, and see every saga execution in real time — step timeline, context snapshots, retry history, and dead letters you can reprocess with a click.
 
 ### Prometheus & Grafana
 
-Add `micrometer-registry-prometheus` to your classpath. Sagaweaw publishes counters and gauges automatically:
+Add `micrometer-registry-prometheus` to your classpath. No extra configuration.
 
 ```promql
 # Saga success rate (last 24h)
 rate(sagaweaw_sagas_completed_total[24h])
   / (rate(sagaweaw_sagas_completed_total[24h]) + rate(sagaweaw_sagas_failed_total[24h]))
 
-# Dead letters pending (alert on this)
+# Dead letters pending — alert on this
 sagaweaw_dead_letters_pending
-
-# Outbox lag (messages waiting to publish to Kafka)
-sagaweaw_outbox_pending
 ```
 
-Scrape endpoint: `your-app/actuator/prometheus`
+### Structured logs with zero config
 
-### ELK / Loki / Splunk (MDC)
-
-Every log line emitted inside a saga step is automatically enriched with:
+Every log line inside a saga step is automatically enriched:
 
 ```
 sagaId=f3a9b2c1  sagaName=order-processing  stepName=charge-payment  attempt=2
 ```
 
-No configuration required. Filter your log aggregator by `sagaName` or `sagaId` and you have the full correlation chain for any saga execution.
-
-### Real-time debug dashboard
-
-For focused saga debugging — see each step's timeline, inspect context snapshots, and reprocess dead letters — open **http://localhost:8484** and enter your token.
-
-The dashboard is a lens for saga-specific debug. Your primary observability remains in Prometheus, Grafana, and your log aggregator.
+Filter by `sagaId` in ELK, Loki, or Splunk and trace any execution end-to-end.
 
 ---
 
 ## Why not Temporal, Axon, or Eventuate?
 
-| | Sagaweaw | Temporal | Axon | Eventuate |
-|---|---|---|---|---|
-| Extra infrastructure | None | Temporal cluster | None | None |
-| Works with your existing DB | ✅ | ❌ | ❌ | ❌ |
-| Lines for a basic saga | ~25 | ~70 | ~80 | ~50 |
-| Built-in dashboard | ✅ | ✅ | ✅ (paid) | ❌ |
-| Spring Boot auto-configuration | ✅ | ❌ | ✅ | ✅ |
-| Learning curve | Low | High | High | Medium |
+|                               | Sagaweaw | Temporal       | Axon       | Eventuate |
+|-------------------------------|----------|----------------|------------|-----------|
+| Extra infrastructure          | **None** | Temporal cluster | None     | None      |
+| Uses your existing DB         | ✅       | ❌             | ❌         | ❌        |
+| Lines for a complete saga     | **~25**  | ~70            | ~80        | ~50       |
+| Built-in debug dashboard      | ✅       | ✅             | ✅ (paid)  | ❌        |
+| Spring Boot auto-configuration| ✅       | ❌             | ✅         | ✅        |
+| Learning curve                | **Low**  | High           | High       | Medium    |
 
-**You already have a database.** PostgreSQL, MySQL, or H2 — no cluster to provision, no new server to operate. One dependency and you're running.
+You already have PostgreSQL. You already know Spring Boot. Sagaweaw speaks your language.
 
 ---
 
 ## Using an AI assistant?
 
-🤖 **Using Cursor, Copilot, Claude, or ChatGPT?** Paste this into your AI assistant and replace `[YOUR CONTEXT]` — it will generate your first saga in seconds:
+🤖 **Using Cursor, Copilot, Claude, or ChatGPT?** Paste this prompt and replace `[YOUR CONTEXT]`:
 
 ```
 You are helping me implement Sagaweaw in my Spring Boot project.
@@ -173,6 +180,16 @@ Generate the complete Saga class and show me how to trigger it.
 
 ---
 
+## Contributing
+
+Sagaweaw is actively developed and we'd love your help. Whether it's a bug fix, a new feature idea, or just feedback from using it in a real project — all contributions matter.
+
+- 🐛 **Found a bug?** [Open an issue](https://github.com/amosjuda/sagaweaw/issues/new?template=bug_report.md)
+- 💡 **Have an idea?** [Start a discussion](https://github.com/amosjuda/sagaweaw/discussions)
+- 🔧 **Want to contribute code?** Read [CONTRIBUTING.md](CONTRIBUTING.md) — the setup takes 5 minutes
+
+---
+
 ## Requirements
 
 - Java 21+
@@ -183,4 +200,4 @@ Generate the complete Saga class and show me how to trigger it.
 
 ## License
 
-Apache 2.0 — free to use in commercial projects.
+Apache 2.0 — free to use in commercial projects, forever.
