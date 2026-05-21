@@ -233,7 +233,7 @@ export default function Header() {
 
                 <div className="border-t border-border pt-2 flex items-center justify-between">
                   <span className="text-[10px] text-gray-400 font-mono">sagaweaw</span>
-                  <span className="text-[10px] text-gray-400 font-mono">v1.0.0</span>
+                  <span className="text-[10px] text-gray-400 font-mono">v1.0.1</span>
                 </div>
 
               </div>
