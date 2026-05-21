@@ -26,7 +26,7 @@ Como você desfaz o pagamento e libera o estoque — de forma confiável, autom�
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 <!-- Flyway é obrigatório para criação automática do schema -->
 <dependency>

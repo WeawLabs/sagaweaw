@@ -26,7 +26,7 @@ How do you undo the payment and release the inventory — reliably, automaticall
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 <!-- Flyway is required for automatic schema creation -->
 <dependency>
