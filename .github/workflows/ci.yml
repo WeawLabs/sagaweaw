@@ -29,14 +29,14 @@ jobs:
 
       - name: Upload SpotBugs report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: spotbugs-report
           path: '**/target/spotbugsXml.xml'
 
       - name: Upload Checkstyle report on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: checkstyle-report
           path: '**/target/checkstyle-result.xml'
