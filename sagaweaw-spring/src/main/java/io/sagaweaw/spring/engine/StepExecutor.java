@@ -1,5 +1,7 @@
 package io.sagaweaw.spring.engine;
 
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import io.sagaweaw.core.SagaContext;
 import io.sagaweaw.core.SagaStep;
 import io.sagaweaw.core.StepOutput;
@@ -35,6 +37,7 @@ public class StepExecutor {
     private final OutboxMessageRepository outboxRepository;
     private final SagaMapper mapper;
     private final List<SagaStepInterceptor> interceptors;
+    private final ObservationRegistry observationRegistry;
 
     @Transactional(noRollbackFor = StepExecutionException.class)
     public <C extends SagaContext> StepOutput execute(
@@ -89,11 +92,19 @@ public class StepExecutor {
         org.slf4j.MDC.put("sagaName", saga.getName());
         org.slf4j.MDC.put("stepName", stepEntity.getStepName());
         org.slf4j.MDC.put("attempt",  String.valueOf(stepEntity.getAttempt()));
+
+        Observation obs = Observation.createNotStarted("sagaweaw.step.compensate", observationRegistry)
+                .lowCardinalityKeyValue("saga.step.name", stepEntity.getStepName())
+                .lowCardinalityKeyValue("saga.id",        saga.getId())
+                .lowCardinalityKeyValue("saga.name",      saga.getName());
+        obs.start();
         try {
             stepDefinition.compensate(context, originalOutput);
         } catch (Exception e) {
+            obs.error(e);
             throw new StepCompensationException(stepEntity.getStepName(), e);
         } finally {
+            obs.stop();
             org.slf4j.MDC.remove("sagaId");
             org.slf4j.MDC.remove("sagaName");
             org.slf4j.MDC.remove("stepName");
