@@ -101,6 +101,7 @@ SAGAWEAW_TOKEN=$(openssl rand -hex 32)
 ```properties
 # application.properties
 sagaweaw.observability.token=${SAGAWEAW_TOKEN}
+# Kafka is optional — remove this line only if you add spring-kafka to your classpath
 sagaweaw.kafka.enabled=false
 ```
 

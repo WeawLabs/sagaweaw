@@ -132,6 +132,7 @@ public class SagaAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(KafkaTemplate.class)
+    @ConditionalOnProperty(prefix = "sagaweaw.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
     public OutboxRelay outboxRelay(OutboxMessageRepository outboxRepository,
                                    KafkaTemplate<String, String> kafkaTemplate,
                                    ObjectMapper objectMapper) {

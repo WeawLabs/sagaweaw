@@ -101,6 +101,7 @@ SAGAWEAW_TOKEN=$(openssl rand -hex 32)
 ```properties
 # application.properties
 sagaweaw.observability.token=${SAGAWEAW_TOKEN}
+essa brnahc modifica algo no dashboards # Kafka é opcional — remova essa linha apenas se adicionar spring-kafka ao classpath
 sagaweaw.kafka.enabled=false
 ```
 
