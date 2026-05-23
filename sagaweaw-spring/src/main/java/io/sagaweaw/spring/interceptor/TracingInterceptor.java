@@ -1,8 +1,7 @@
 package io.sagaweaw.spring.interceptor;
 
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import io.sagaweaw.core.SagaContext;
 import io.sagaweaw.core.SagaStep;
 import io.sagaweaw.core.StepOutput;
@@ -14,35 +13,35 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Order(2)
-@ConditionalOnClass(Tracer.class)
+@ConditionalOnClass(ObservationRegistry.class)
 @RequiredArgsConstructor
 public class TracingInterceptor implements SagaStepInterceptor {
 
-    private final Tracer tracer;
+    private final ObservationRegistry observationRegistry;
 
     @Override
     public <C extends SagaContext> StepOutput intercept(
             SagaStep<C> step, C context, StepExecutionChain chain) throws Exception {
 
-        Span span = tracer.spanBuilder("sagaweaw.step." + step.name())
-                .setAttribute("saga.step.type", step.type().name())
-                .startSpan();
+        Observation obs = Observation.createNotStarted("sagaweaw.step.invoke", observationRegistry)
+                .lowCardinalityKeyValue("saga.step.name", step.name())
+                .lowCardinalityKeyValue("saga.step.type", step.type().name());
 
-        String sagaId = MDC.get("sagaId");
-        if (sagaId != null) {
-            span.setAttribute("saga.id", sagaId);
-        }
+        String sagaId   = MDC.get("sagaId");
+        String sagaName = MDC.get("sagaName");
+        String attempt  = MDC.get("attempt");
+        if (sagaId   != null) obs.lowCardinalityKeyValue("saga.id",           sagaId);
+        if (sagaName != null) obs.lowCardinalityKeyValue("saga.name",         sagaName);
+        if (attempt  != null) obs.lowCardinalityKeyValue("saga.step.attempt", attempt);
 
-        try (Scope scope = span.makeCurrent()) {
-            StepOutput output = chain.proceed(step, context);
-            span.setAttribute("saga.step.status", "COMPLETED");
-            return output;
+        obs.start();
+        try {
+            return chain.proceed(step, context);
         } catch (Exception e) {
-            span.setAttribute("saga.step.status", "FAILED");
-            span.recordException(e);
+            obs.error(e);
             throw e;
         } finally {
-            span.end();
+            obs.stop();
         }
     }
 }

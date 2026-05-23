@@ -12,7 +12,8 @@ public record SagaProperties(
         WebSocket websocket,
         Observability observability,
         Health health,
-        Dashboard dashboard
+        Dashboard dashboard,
+        Tracing tracing
 ) {
 
     public record Dashboard(
@@ -26,6 +27,15 @@ public record SagaProperties(
 
     public record Observability(
             String token,
+            @DefaultValue("true") boolean enabled
+    ) {}
+
+    /**
+     * sagaweaw.tracing.enabled=false disables OTel span generation entirely.
+     * Spans are only emitted when micrometer-tracing (or micrometer-tracing-bridge-otel)
+     * is on the classpath — this property provides an explicit opt-out.
+     */
+    public record Tracing(
             @DefaultValue("true") boolean enabled
     ) {}
 
