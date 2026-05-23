@@ -28,7 +28,7 @@ class SagaHealthIndicatorTest {
 
     @BeforeEach
     void setUp() {
-        SagaProperties properties = new SagaProperties(3, 1000L, 5000L, 8484, null, null, null, null);
+        SagaProperties properties = new SagaProperties(3, 1000L, 5000L, 8484, null, null, null, null, null);
         indicator = new SagaHealthIndicator(sagaRepository, deadLetterRepository, properties);
     }
 
@@ -68,7 +68,7 @@ class SagaHealthIndicatorTest {
         @Test
         void stuck_check_disabled_when_threshold_is_zero() {
             SagaProperties props = new SagaProperties(3, 1000L, 5000L, 8484, null, null,
-                    new SagaProperties.Health(0, 0), null);
+                    new SagaProperties.Health(0, 0), null, null);
             indicator = new SagaHealthIndicator(sagaRepository, deadLetterRepository, props);
 
             when(deadLetterRepository.countByReprocessedFalse()).thenReturn(0L);
@@ -87,7 +87,7 @@ class SagaHealthIndicatorTest {
         @Test
         void returns_OUT_OF_SERVICE_when_threshold_exceeded() {
             SagaProperties props = new SagaProperties(3, 1000L, 5000L, 8484, null, null,
-                    new SagaProperties.Health(30, 5), null);
+                    new SagaProperties.Health(30, 5), null, null);
             indicator = new SagaHealthIndicator(sagaRepository, deadLetterRepository, props);
 
             when(deadLetterRepository.countByReprocessedFalse()).thenReturn(6L);
@@ -104,7 +104,7 @@ class SagaHealthIndicatorTest {
         @Test
         void dead_letters_below_threshold_still_returns_UP() {
             SagaProperties props = new SagaProperties(3, 1000L, 5000L, 8484, null, null,
-                    new SagaProperties.Health(30, 5), null);
+                    new SagaProperties.Health(30, 5), null, null);
             indicator = new SagaHealthIndicator(sagaRepository, deadLetterRepository, props);
 
             when(deadLetterRepository.countByReprocessedFalse()).thenReturn(4L);
@@ -135,7 +135,7 @@ class SagaHealthIndicatorTest {
         @Test
         void DOWN_takes_precedence_over_OUT_OF_SERVICE() {
             SagaProperties props = new SagaProperties(3, 1000L, 5000L, 8484, null, null,
-                    new SagaProperties.Health(30, 5), null);
+                    new SagaProperties.Health(30, 5), null, null);
             indicator = new SagaHealthIndicator(sagaRepository, deadLetterRepository, props);
 
             when(deadLetterRepository.countByReprocessedFalse()).thenReturn(10L);

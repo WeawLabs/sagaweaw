@@ -23,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.slf4j.MDC;
 
+import io.micrometer.observation.ObservationRegistry;
+
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +53,7 @@ class StepExecutorTest {
 
     @BeforeEach
     void setUp() {
-        executor   = new StepExecutor(stepRepository, outboxRepository, mapper, List.of());
+        executor   = new StepExecutor(stepRepository, outboxRepository, mapper, List.of(), ObservationRegistry.NOOP);
         saga       = mock(SagaEntity.class);
         stepEntity = mock(SagaStepEntity.class);
 
@@ -322,7 +324,7 @@ class StepExecutorTest {
                 }
             };
             StepExecutor withInterceptor = new StepExecutor(
-                    stepRepository, outboxRepository, mapper, List.of(interceptor));
+                    stepRepository, outboxRepository, mapper, List.of(interceptor), ObservationRegistry.NOOP);
 
             withInterceptor.execute(saga, stepEntity, successStep(), new Ctx("1"));
 

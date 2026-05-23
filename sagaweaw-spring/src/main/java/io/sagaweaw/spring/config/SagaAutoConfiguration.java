@@ -28,7 +28,7 @@ import io.sagaweaw.spring.repository.SagaStepRepository;
 import io.sagaweaw.spring.scheduler.OutboxRelay;
 import io.sagaweaw.spring.scheduler.RetryScheduler;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.opentelemetry.api.trace.Tracer;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -92,8 +92,10 @@ public class SagaAutoConfiguration {
     public StepExecutor stepExecutor(SagaStepRepository stepRepository,
                                      OutboxMessageRepository outboxRepository,
                                      SagaMapper mapper,
-                                     List<SagaStepInterceptor> interceptors) {
-        return new StepExecutor(stepRepository, outboxRepository, mapper, interceptors);
+                                     List<SagaStepInterceptor> interceptors,
+                                     org.springframework.beans.factory.ObjectProvider<ObservationRegistry> observationRegistryProvider) {
+        return new StepExecutor(stepRepository, outboxRepository, mapper, interceptors,
+                observationRegistryProvider.getIfAvailable(() -> ObservationRegistry.NOOP));
     }
 
     @Bean
@@ -130,6 +132,7 @@ public class SagaAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean(KafkaTemplate.class)
+    @ConditionalOnProperty(prefix = "sagaweaw.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
     public OutboxRelay outboxRelay(OutboxMessageRepository outboxRepository,
                                    KafkaTemplate<String, String> kafkaTemplate,
                                    ObjectMapper objectMapper) {
@@ -298,13 +301,15 @@ public class SagaAutoConfiguration {
     }
 
     @Configuration
-    @ConditionalOnClass(Tracer.class)
+    @ConditionalOnClass(ObservationRegistry.class)
+    @ConditionalOnProperty(prefix = "sagaweaw.tracing", name = "enabled",
+            havingValue = "true", matchIfMissing = true)
     static class SagaTracingConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        @ConditionalOnBean(Tracer.class)
-        public TracingInterceptor tracingInterceptor(Tracer tracer) {
-            return new TracingInterceptor(tracer);
+        @ConditionalOnBean(ObservationRegistry.class)
+        public TracingInterceptor tracingInterceptor(ObservationRegistry observationRegistry) {
+            return new TracingInterceptor(observationRegistry);
         }
     }
 
