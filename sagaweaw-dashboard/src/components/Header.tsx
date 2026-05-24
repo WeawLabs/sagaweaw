@@ -82,6 +82,20 @@ export default function Header() {
 
   const token = getToken()
 
+  async function downloadGrafanaDashboard() {
+    const res = await fetch('/api/grafana-dashboard', {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href     = url
+    a.download = 'sagaweaw-grafana-dashboard.json'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <header className="bg-surface border-b border-border sticky top-0 z-50">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
@@ -211,6 +225,13 @@ export default function Header() {
 
                 {/* links */}
                 <div className="flex flex-col gap-1 border-t border-border pt-2">
+                  <button
+                    onClick={downloadGrafanaDashboard}
+                    className="flex items-center gap-2 text-[12px] text-gray-600 hover:text-ink transition-colors text-left"
+                  >
+                    <span>📊</span>
+                    <span>Grafana Dashboard (JSON)</span>
+                  </button>
                   <a
                     href={DISCUSSIONS_URL}
                     target="_blank"
@@ -233,7 +254,7 @@ export default function Header() {
 
                 <div className="border-t border-border pt-2 flex items-center justify-between">
                   <span className="text-[10px] text-gray-400 font-mono">sagaweaw</span>
-                  <span className="text-[10px] text-gray-400 font-mono">v1.0.1</span>
+                  <span className="text-[10px] text-gray-400 font-mono">v1.0.2</span>
                 </div>
 
               </div>
