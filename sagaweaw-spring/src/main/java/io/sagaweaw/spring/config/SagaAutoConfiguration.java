@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Import;
 import io.sagaweaw.spring.SagaManager;
 import io.sagaweaw.spring.health.SagaHealthIndicator;
 import io.sagaweaw.spring.api.DeadLetterController;
+import io.sagaweaw.spring.api.GrafanaDashboardController;
 import io.sagaweaw.spring.api.ObservabilityTokenInterceptor;
 import io.sagaweaw.spring.api.SagaObservabilityController;
 import io.sagaweaw.spring.api.SagaWebSocketHandler;
@@ -160,6 +161,14 @@ public class SagaAutoConfiguration {
             SagaMapper mapper) {
         return new SagaObservabilityController(sagaRepository, deadLetterRepository,
                 sagaEventRepository, sagaStepRepository, outboxMessageRepository, engine, mapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.observability", name = "enabled",
+            havingValue = "true", matchIfMissing = true)
+    public GrafanaDashboardController grafanaDashboardController() {
+        return new GrafanaDashboardController();
     }
 
     @Bean
@@ -328,7 +337,7 @@ public class SagaAutoConfiguration {
                     ? properties.observability().token()
                     : null;
             registry.addInterceptor(new ObservabilityTokenInterceptor(token))
-                    .addPathPatterns("/api/sagas/**", "/api/dead-letters/**");
+                    .addPathPatterns("/api/sagas/**", "/api/dead-letters/**", "/api/grafana-dashboard");
         }
     }
 
