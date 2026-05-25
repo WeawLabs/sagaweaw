@@ -2,6 +2,7 @@ package io.sagaweaw.spring.api;
 
 import io.sagaweaw.core.SagaEngine.SagaNotFoundException;
 import io.sagaweaw.core.SagaInstance;
+import io.sagaweaw.spring.config.SagaProperties;
 import io.sagaweaw.spring.engine.SpringSagaEngine;
 import io.sagaweaw.spring.mapper.SagaMapper;
 import io.sagaweaw.spring.repository.DeadLetterRepository;
@@ -25,6 +26,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @RestController
 @RequestMapping("/api/sagas")
@@ -38,6 +40,7 @@ public class SagaObservabilityController {
     private final OutboxMessageRepository outboxMessageRepository;
     private final SpringSagaEngine        engine;
     private final SagaMapper              mapper;
+    private final SagaProperties          properties;
 
     @GetMapping
     public List<SagaInstance> list(
@@ -95,6 +98,15 @@ public class SagaObservabilityController {
                     .stream().map(mapper::toInstance).toList();
         }
         return sagaRepository.findAllWithSteps(pageable)
+                .stream().map(mapper::toInstance).toList();
+    }
+
+    @GetMapping("/stuck")
+    public List<SagaInstance> stuck() {
+        SagaProperties.Health cfg = properties.health();
+        int minutes   = cfg != null ? cfg.stuckThresholdMinutes() : 15;
+        Instant threshold = Instant.now().minus(minutes, MINUTES);
+        return sagaRepository.findStuck(threshold, PageRequest.of(0, 50))
                 .stream().map(mapper::toInstance).toList();
     }
 

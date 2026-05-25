@@ -56,6 +56,7 @@ export const api = {
     events:  (id: string) => get<SagaEvent[]>(`/sagas/${id}/events`),
     metrics:    ()          => get<SagaMetrics>('/sagas/metrics'),
     retrying:   ()          => get<RetryingStep[]>('/sagas/steps/retrying'),
+    stuck:      ()          => get<SagaInstance[]>('/sagas/stuck'),
     statsByName: ()         => get<SagaNameStats[]>('/sagas/stats/by-name'),
     stepsStats:  ()         => get<StepStats[]>('/sagas/steps/stats'),
   },

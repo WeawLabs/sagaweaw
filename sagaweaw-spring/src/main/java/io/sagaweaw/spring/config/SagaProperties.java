@@ -46,7 +46,7 @@ public record SagaProperties(
      * OUT_OF_SERVICE. Set to 0 (default) to report dead letters as detail only, never as status.
      */
     public record Health(
-            @DefaultValue("30") int stuckThresholdMinutes,
+            @DefaultValue("15") int stuckThresholdMinutes,
             @DefaultValue("0")  int deadLetterAlertThreshold
     ) {}
 

@@ -47,7 +47,10 @@
     "agoSeconds":        "{{n}}s ago",
     "agoMinutes":        "{{n}}m ago",
     "counterLive":       "{{count}} sagas · live",
-    "page":              "Page {{n}}"
+    "page":              "Page {{n}}",
+    "stuck":             "{{count}} stuck saga(s) — no update for 15+ min",
+    "stuckBadge":        "STUCK",
+    "stuckSince":        "last update {{time}}"
   },
   "auth": {
     "title":       "Sagaweaw Dashboard",
