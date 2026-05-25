@@ -78,7 +78,7 @@ Os tipos de step são inferidos pelo que você declara:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.4</version>
 </dependency>
 <!-- Obrigatório para criação automática do schema -->
 <dependency>
@@ -119,7 +119,40 @@ sagaManager.start(OrderSaga.class, new OrderContext(orderId, customerId, itemId,
 
 ### Dashboard de debug em tempo real
 
-Abra `http://localhost:8484`, insira o token e veja cada execução de saga em tempo real — timeline de steps, snapshots de contexto, histórico de retry e dead letters que você pode reprocessar com um clique.
+Abra `http://localhost:8484`, insira o token e veja cada execução de saga em tempo real:
+
+- **Timeline de steps** — status, duração, contagem de retry e erro de cada step
+- **Snapshots de contexto** — os dados de negócio em cada ponto da execução
+- **Busca por ID de negócio** — digite um `orderId`, `customerId` ou qualquer valor do contexto e encontre todas as sagas relacionadas na hora
+- **Detecção de sagas travadas** — sagas paradas em `EXECUTING` além do tempo configurado aparecem em vermelho com badge "STUCK"
+- **Diagrama do fluxo da saga** — veja a sequência esperada de steps versus o que realmente aconteceu
+- **Sagas relacionadas** — no detalhe de qualquer saga, veja todas as outras sagas que compartilham o mesmo ID de negócio
+- **Reprocessamento em lote de dead letters** — selecione várias mensagens com falha e reprocesse de uma vez
+- **Exportação CSV** — exporte listas de sagas filtradas e dead letters como CSV para análise offline
+
+### OpenTelemetry
+
+Se você já tem OpenTelemetry no classpath, os spans do Sagaweaw aparecem **automaticamente** no seu backend existente — sem nenhuma configuração extra.
+
+```xml
+<!-- Se você já usa OTel, é só isso que precisa -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+```
+
+Cada evento do ciclo de vida da saga gera um span com os atributos corretos:
+
+```
+saga.started         saga.name=order-processing  saga.id=f3a9b2c1
+saga.step.invoke     saga.step.name=charge-payment  saga.step.attempt=2
+saga.step.failed     saga.step.name=charge-payment
+saga.step.compensating
+saga.compensated
+```
+
+Funciona com Jaeger, Grafana Tempo, Honeycomb, Datadog, Zipkin e qualquer backend compatível com OTel. Desabilite com `sagaweaw.tracing.enabled=false`.
 
 ### Prometheus & Grafana
 
@@ -134,6 +167,8 @@ rate(sagaweaw_sagas_completed_total[24h])
 sagaweaw_dead_letters_pending
 ```
 
+Um dashboard Grafana pré-construído está incluso. No dashboard, clique no botão de download para obter o JSON — importe no seu Grafana em 30 segundos.
+
 ### Logs estruturados sem configuração
 
 Toda linha de log dentro de um step é automaticamente enriquecida:
@@ -146,6 +181,50 @@ Filtre por `sagaId` no ELK, Loki ou Splunk e trace qualquer execução de ponta 
 
 ---
 
+## Operações
+
+### Alertas via webhook
+
+Receba notificações para eventos críticos com uma única propriedade:
+
+```properties
+sagaweaw.alerts.webhook-url=https://hooks.slack.com/services/...
+sagaweaw.alerts.on-dead-letter=true
+sagaweaw.alerts.on-stuck-saga=true
+sagaweaw.alerts.failure-rate-threshold=0.05
+```
+
+Funciona com Slack, Discord, Teams, PagerDuty e qualquer endpoint HTTP POST. Zero dependências novas.
+
+### Retenção de dados configurável
+
+Controle por quanto tempo os dados das sagas ficam no seu banco:
+
+```properties
+# Arquiva sagas COMPLETED e COMPENSATED após 30 dias
+sagaweaw.data.retention-days=30
+
+# Mantém sagas FAILED por mais tempo — o time vai querer investigar e reprocessar
+sagaweaw.data.failed-retention-days=90
+```
+
+Um job noturno arquiva as sagas elegíveis para uma tabela `sagas_archive`, preservando o contexto completo e o histórico de steps para auditoria. Padrão: nunca deletar.
+
+### Suporte a múltiplas instâncias
+
+Rode N instâncias contra o mesmo banco sem nenhuma configuração extra. Cada saga registra qual instância a criou. Veja todas as instâncias ativas e a contagem de sagas em tempo real:
+
+```
+GET /api/instances?hoursBack=2
+```
+
+```properties
+# Opcional: sobrescreva o ID de instância gerado automaticamente
+sagaweaw.instance.id=${HOSTNAME}
+```
+
+---
+
 ## Por que não Temporal, Axon ou Eventuate?
 
 |                                | Sagaweaw | Temporal        | Axon       | Eventuate |
@@ -154,6 +233,7 @@ Filtre por `sagaId` no ELK, Loki ou Splunk e trace qualquer execução de ponta 
 | Usa o banco que você já tem    | ✅       | ❌              | ❌         | ❌        |
 | Linhas para uma saga completa  | **~25**  | ~70             | ~80        | ~50       |
 | Dashboard de debug nativo      | ✅       | ✅              | ✅ (pago)  | ❌        |
+| Spans OpenTelemetry            | ✅       | ✅              | ✅         | ❌        |
 | Auto-configuration Spring Boot | ✅       | ❌              | ✅         | ✅        |
 | Curva de aprendizado           | **Baixa** | Alta           | Alta       | Média     |
 

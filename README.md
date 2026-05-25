@@ -78,7 +78,7 @@ Step types are inferred from what you declare:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.4</version>
 </dependency>
 <!-- Required for automatic schema creation -->
 <dependency>
@@ -119,7 +119,40 @@ That's it. Sagaweaw creates the schema, registers your saga, and handles the res
 
 ### Real-time debug dashboard
 
-Open `http://localhost:8484`, enter your token, and see every saga execution in real time — step timeline, context snapshots, retry history, and dead letters you can reprocess with a click.
+Open `http://localhost:8484`, enter your token, and see every saga execution in real time:
+
+- **Step timeline** — status, duration, retry count, and error for each step
+- **Context snapshots** — the business data at every point of execution
+- **Search by business ID** — type an `orderId`, `customerId`, or any value from the context and find every saga related to it instantly
+- **Stuck saga detection** — sagas stuck in `EXECUTING` beyond a configurable threshold are highlighted in red with a "STUCK" badge
+- **Saga flow diagram** — see the expected step sequence vs. what actually happened
+- **Related sagas** — from any saga detail, see all other sagas sharing the same business ID
+- **Batch dead letter reprocessing** — select multiple failed messages and reprocess them at once
+- **CSV export** — export filtered saga lists and dead letters as CSV for offline analysis
+
+### OpenTelemetry
+
+If you already have OpenTelemetry in your classpath, Sagaweaw's spans appear **automatically** in your existing backend — no extra configuration.
+
+```xml
+<!-- If you're already using OTel, that's all you need -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-opentelemetry</artifactId>
+</dependency>
+```
+
+Every saga lifecycle event produces a span with the right attributes:
+
+```
+saga.started         saga.name=order-processing  saga.id=f3a9b2c1
+saga.step.invoke     saga.step.name=charge-payment  saga.step.attempt=2
+saga.step.failed     saga.step.name=charge-payment
+saga.step.compensating
+saga.compensated
+```
+
+Works with Jaeger, Grafana Tempo, Honeycomb, Datadog, Zipkin, and any OTel-compatible backend. Disable with `sagaweaw.tracing.enabled=false`.
 
 ### Prometheus & Grafana
 
@@ -134,6 +167,8 @@ rate(sagaweaw_sagas_completed_total[24h])
 sagaweaw_dead_letters_pending
 ```
 
+A pre-built Grafana dashboard is included. From the dashboard UI, click the download button to get the JSON — import it into your Grafana instance in 30 seconds.
+
 ### Structured logs with zero config
 
 Every log line inside a saga step is automatically enriched:
@@ -146,6 +181,50 @@ Filter by `sagaId` in ELK, Loki, or Splunk and trace any execution end-to-end.
 
 ---
 
+## Operations
+
+### Webhook alerts
+
+Receive notifications for critical events with a single property:
+
+```properties
+sagaweaw.alerts.webhook-url=https://hooks.slack.com/services/...
+sagaweaw.alerts.on-dead-letter=true
+sagaweaw.alerts.on-stuck-saga=true
+sagaweaw.alerts.failure-rate-threshold=0.05
+```
+
+Works with Slack, Discord, Teams, PagerDuty, and any HTTP POST endpoint. Zero new dependencies.
+
+### Configurable data retention
+
+Control how long saga data stays in your database:
+
+```properties
+# Archive COMPLETED and COMPENSATED sagas after 30 days
+sagaweaw.data.retention-days=30
+
+# Keep FAILED sagas longer — your team will want to investigate and reprocess
+sagaweaw.data.failed-retention-days=90
+```
+
+A nightly job archives eligible sagas to a `sagas_archive` table, preserving the full context and step history for audit. Default: never delete.
+
+### Multi-instance support
+
+Run N instances against the same database with no extra configuration. Each saga records which instance created it. See all active instances and their live saga counts:
+
+```
+GET /api/instances?hoursBack=2
+```
+
+```properties
+# Optional: override the auto-generated instance ID
+sagaweaw.instance.id=${HOSTNAME}
+```
+
+---
+
 ## Why not Temporal, Axon, or Eventuate?
 
 |                               | Sagaweaw | Temporal       | Axon       | Eventuate |
@@ -154,6 +233,7 @@ Filter by `sagaId` in ELK, Loki, or Splunk and trace any execution end-to-end.
 | Uses your existing DB         | ✅       | ❌             | ❌         | ❌        |
 | Lines for a complete saga     | **~25**  | ~70            | ~80        | ~50       |
 | Built-in debug dashboard      | ✅       | ✅             | ✅ (paid)  | ❌        |
+| OpenTelemetry spans           | ✅       | ✅             | ✅         | ❌        |
 | Spring Boot auto-configuration| ✅       | ❌             | ✅         | ✅        |
 | Learning curve                | **Low**  | High           | High       | Medium    |
 
