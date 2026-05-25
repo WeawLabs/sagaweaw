@@ -5,6 +5,8 @@ import io.sagaweaw.spring.entity.SagaEntity;
 import io.sagaweaw.spring.repository.DeadLetterRepository;
 import io.sagaweaw.spring.repository.SagaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,8 +88,49 @@ public class DeadLetterController {
         return ResponseEntity.ok(Map.of("reprocessed", reprocessed, "failed", failed));
     }
 
+    @GetMapping("/export")
+    public ResponseEntity<String> export() {
+        var entities = deadLetterRepository.findByReprocessedFalseOrderByCreatedAtAsc();
+        Map<String, String> nameMap = loadSagaNames(entities.stream().map(e -> e.getSagaId()).toList());
+        StringBuilder csv = new StringBuilder("sagaId,sagaName,stepName,createdAt,errorMessage,context\n");
+        for (var e : entities) {
+            appendCsvRow(csv,
+                    e.getSagaId(),
+                    nameMap.getOrDefault(e.getSagaId(), ""),
+                    e.getStepName(),
+                    e.getCreatedAt() != null ? e.getCreatedAt().toString() : "",
+                    e.getErrorMessage(),
+                    truncate(e.getContextSnapshot(), 200));
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
+        headers.setContentDispositionFormData("attachment", "dead-letters.csv");
+        return ResponseEntity.ok().headers(headers).body(csv.toString());
+    }
+
     private Map<String, String> loadSagaNames(List<String> sagaIds) {
         return sagaRepository.findAllById(sagaIds).stream()
                 .collect(Collectors.toMap(SagaEntity::getId, SagaEntity::getName));
+    }
+
+    private static void appendCsvRow(StringBuilder sb, String... fields) {
+        for (int i = 0; i < fields.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(escapeCsv(fields[i]));
+        }
+        sb.append('\n');
+    }
+
+    private static String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
+    private static String truncate(String value, int max) {
+        if (value == null) return "";
+        return value.length() > max ? value.substring(0, max) + "…" : value;
     }
 }

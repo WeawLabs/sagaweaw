@@ -50,7 +50,8 @@
     "page":              "Página {{n}}",
     "stuck":             "{{count}} saga(s) travada(s) — sem atualização há 15+ min",
     "stuckBadge":        "TRAVADA",
-    "stuckSince":        "última atualização {{time}}"
+    "stuckSince":        "última atualização {{time}}",
+    "exportCsv":         "Exportar CSV"
   },
   "auth": {
     "title":       "Sagaweaw Dashboard",
@@ -119,6 +120,7 @@
     "context":          "Snapshot de contexto",
     "selectAll":        "Selecionar todos",
     "deselectAll":      "Desmarcar todos",
-    "reprocessSelected": "Reprocessar {{count}}"
+    "reprocessSelected": "Reprocessar {{count}}",
+    "exportCsv":        "Exportar CSV"
   }
 }
