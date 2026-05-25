@@ -80,7 +80,7 @@
         <!-- Static analysis versions -->
         <spotbugs.version>4.9.8.3</spotbugs.version>
         <checkstyle.version>10.17.0</checkstyle.version>
-        <error-prone.version>2.28.0</error-prone.version>
+        <error-prone.version>2.49.0</error-prone.version>
     </properties>
 
     <!-- ============================================================
@@ -155,6 +155,8 @@
                             <!-- Error Prone — compile-time bug detection (Java equivalent of Detekt) -->
                             <arg>-XDcompilePolicy=simple</arg>
                             <arg>-Xplugin:ErrorProne</arg>
+                            <arg>--should-stop=ifError=FLOW</arg>
+                            <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
                         </compilerArgs>
                         <annotationProcessorPaths>
                             <path>
