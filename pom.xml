@@ -75,7 +75,7 @@
         <postgresql.version>42.7.3</postgresql.version>
         <flyway.version>10.15.0</flyway.version>
         <testcontainers.version>1.21.3</testcontainers.version>
-        <awaitility.version>4.2.1</awaitility.version>
+        <awaitility.version>4.3.0</awaitility.version>
 
         <!-- Static analysis versions -->
         <spotbugs.version>4.9.8.3</spotbugs.version>
