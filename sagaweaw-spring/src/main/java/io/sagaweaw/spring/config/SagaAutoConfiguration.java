@@ -1,6 +1,8 @@
 package io.sagaweaw.spring.config;
 
 import tools.jackson.databind.ObjectMapper;
+import io.sagaweaw.spring.alert.AlertListener;
+import io.sagaweaw.spring.alert.AlertWebhookService;
 import org.springframework.context.annotation.Import;
 import io.sagaweaw.spring.SagaManager;
 import io.sagaweaw.spring.health.SagaHealthIndicator;
@@ -146,6 +148,22 @@ public class SagaAutoConfiguration {
     public RetryScheduler retryScheduler(SagaStepRepository stepRepository,
                                          SpringSagaEngine engine) {
         return new RetryScheduler(stepRepository, engine);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.alerts", name = "webhook-url")
+    public AlertWebhookService alertWebhookService(SagaProperties properties) {
+        return new AlertWebhookService(properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.alerts", name = "webhook-url")
+    public AlertListener alertListener(AlertWebhookService alertWebhookService,
+                                       SagaRepository sagaRepository,
+                                       SagaProperties properties) {
+        return new AlertListener(alertWebhookService, sagaRepository, properties);
     }
 
     @Bean
