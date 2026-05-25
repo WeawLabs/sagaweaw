@@ -44,12 +44,14 @@ export default function SagaFeed() {
 
   const load = useCallback(async () => {
     try {
-      const isIdSearch = name.startsWith('#')
+      const isIdSearch      = name.startsWith('#')
+      const isContextSearch = name.startsWith('@')
       const [s, m] = await Promise.all([
         api.sagas.list({
           status: status || undefined,
-          name:   isIdSearch ? undefined : name || undefined,
-          id:     isIdSearch ? name.slice(1) || undefined : undefined,
+          name:   isIdSearch || isContextSearch ? undefined : name || undefined,
+          id:     isIdSearch      ? name.slice(1) || undefined : undefined,
+          contextSearch: isContextSearch ? name.slice(1) || undefined : undefined,
         }),
         api.sagas.metrics(),
       ])

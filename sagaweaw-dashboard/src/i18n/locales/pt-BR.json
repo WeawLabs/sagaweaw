@@ -37,7 +37,7 @@
       "COMPENSATED":  "Compensada",
       "FAILED":       "Falhou"
     },
-    "filterPlaceholder": "Filtrar por nome da saga…",
+    "filterPlaceholder": "nome · #id · @contexto…",
     "counter":           "{{count}} sagas · atualiza a cada 3s",
     "loading":           "Carregando…",
     "loadError":         "Falha ao carregar",

@@ -46,6 +46,7 @@ public class SagaObservabilityController {
             @RequestParam(required = false)     String status,
             @RequestParam(required = false)     String name,
             @RequestParam(required = false)     String id,
+            @RequestParam(required = false)     String contextSearch,
             @RequestParam(required = false)     String idempotencyKey,
             @RequestParam(required = false)     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false)     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to) {
@@ -57,6 +58,11 @@ public class SagaObservabilityController {
                     .map(mapper::toInstance)
                     .map(List::of)
                     .orElse(List.of());
+        }
+
+        if (contextSearch != null && !contextSearch.isBlank()) {
+            return sagaRepository.findByContextContaining("%" + contextSearch + "%", pageable)
+                    .stream().map(mapper::toInstance).toList();
         }
 
         if (id != null) {

@@ -37,7 +37,7 @@
       "COMPENSATED":  "Compensated",
       "FAILED":       "Failed"
     },
-    "filterPlaceholder": "Filter by saga name…",
+    "filterPlaceholder": "name · #id · @context…",
     "counter":           "{{count}} sagas · refreshes every 3s",
     "loading":           "Loading…",
     "loadError":         "Failed to load",

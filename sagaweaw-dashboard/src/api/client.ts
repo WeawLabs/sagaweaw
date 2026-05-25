@@ -42,14 +42,15 @@ async function post(path: string): Promise<void> {
 
 export const api = {
   sagas: {
-    list: (params?: { status?: string; name?: string; id?: string; page?: number; size?: number }) => {
-      const q = new URLSearchParams()
-      if (params?.status) q.set('status', params.status)
-      if (params?.name)   q.set('name', params.name)
-      if (params?.id)     q.set('id', params.id)
-      if (params?.page != null) q.set('page', String(params.page))
-      if (params?.size != null) q.set('size', String(params.size))
-      return get<SagaInstance[]>(`/sagas?${q}`)
+    list: (params?: { status?: string; name?: string; id?: string; contextSearch?: string; page?: number; size?: number }) => {
+      const qs = new URLSearchParams()
+      if (params?.status)        qs.set('status', params.status)
+      if (params?.name)          qs.set('name', params.name)
+      if (params?.id)            qs.set('id', params.id)
+      if (params?.contextSearch) qs.set('contextSearch', params.contextSearch)
+      if (params?.page != null) qs.set('page', String(params.page))
+      if (params?.size != null) qs.set('size', String(params.size))
+      return get<SagaInstance[]>(`/sagas?${qs}`)
     },
     get:     (id: string) => get<SagaInstance>(`/sagas/${id}`),
     events:  (id: string) => get<SagaEvent[]>(`/sagas/${id}/events`),
