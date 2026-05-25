@@ -13,14 +13,14 @@
     "@stomp/stompjs": "^7.3.0",
     "i18next": "^26.2.0",
     "i18next-browser-languagedetector": "^8.2.1",
-    "react": "^18.3.1",
+    "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-i18next": "^17.0.8",
     "react-router-dom": "^7.15.1",
     "sockjs-client": "^1.6.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
+    "@types/react": "^19.1.6",
     "@types/react-dom": "^19.2.3",
     "@types/sockjs-client": "^1.5.4",
     "@vitejs/plugin-react": "^6.0.2",
