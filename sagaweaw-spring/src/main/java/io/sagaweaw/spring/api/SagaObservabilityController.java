@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 @RestController
@@ -148,6 +150,20 @@ public class SagaObservabilityController {
         headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
         headers.setContentDispositionFormData("attachment", filename);
         return ResponseEntity.ok().headers(headers).body(csv.toString());
+    }
+
+    public record InstanceInfo(String id, Instant lastSeen, long activeSagas) {}
+
+    @GetMapping("/instances")
+    public List<InstanceInfo> instances(
+            @RequestParam(defaultValue = "2") int hoursBack) {
+        Instant since = Instant.now().minus(hoursBack, ChronoUnit.HOURS);
+        return sagaRepository.findActiveInstances(since).stream()
+                .map(row -> new InstanceInfo(
+                        (String) row[0],
+                        ((Timestamp) row[1]).toInstant(),
+                        ((Number) row[2]).longValue()))
+                .toList();
     }
 
     @GetMapping("/stuck")

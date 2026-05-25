@@ -29,28 +29,49 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.sagaweaw.spring.config.SagaProperties;
 import io.sagaweaw.core.IdempotencyKey;
 import io.sagaweaw.core.SagaStatus;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.InetAddress;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class SpringSagaEngine implements SagaEngine {
 
-    private final SagaRegistry          registry;
-    private final SagaRepository        sagaRepository;
-    private final SagaStepRepository    stepRepository;
-    private final SagaEventRepository   eventRepository;
-    private final DeadLetterRepository  deadLetterRepository;
-    private final StepExecutor          stepExecutor;
-    private final CompensationExecutor  compensationExecutor;
-    private final SagaMapper            mapper;
+    private final SagaRegistry           registry;
+    private final SagaRepository         sagaRepository;
+    private final SagaStepRepository     stepRepository;
+    private final SagaEventRepository    eventRepository;
+    private final DeadLetterRepository   deadLetterRepository;
+    private final StepExecutor           stepExecutor;
+    private final CompensationExecutor   compensationExecutor;
+    private final SagaMapper             mapper;
     private final ApplicationEventPublisher publisher;
+    private final SagaProperties         properties;
+
+    private static final String INSTANCE_ID = resolveInstanceId();
+
+    private static String resolveInstanceId() {
+        try {
+            String host = InetAddress.getLocalHost().getHostName();
+            return host + "-" + UUID.randomUUID().toString().substring(0, 8);
+        } catch (Exception e) {
+            return UUID.randomUUID().toString().substring(0, 12);
+        }
+    }
+
+    private String effectiveInstanceId() {
+        SagaProperties.Instance inst = properties.instance();
+        if (inst != null && inst.id() != null && !inst.id().isBlank()) return inst.id();
+        return INSTANCE_ID;
+    }
 
     // ================================================================
     // PUBLIC API
@@ -180,6 +201,7 @@ public class SpringSagaEngine implements SagaEngine {
 
         SagaEntity saga = SagaEntity.create(
                 flow.sagaName(), mapper.toJson(context), idempotencyKey);
+        saga.setInstanceId(effectiveInstanceId());
         saga = sagaRepository.save(saga);
 
         createStepEntities(saga, flow);

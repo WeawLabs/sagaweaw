@@ -64,6 +64,9 @@ public class SagaEntity {
     @Column(length = 255)
     private String idempotencyKey;
 
+    @Column(name = "instance_id", length = 255)
+    private String instanceId;
+
     // Optimistic locking — prevents concurrent state overwrites without Redis (ADR-004)
     @Version
     @Column(nullable = false)

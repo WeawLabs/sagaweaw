@@ -45,7 +45,7 @@ class SagaObservabilityControllerTest {
     private SagaObservabilityController controller;
 
     private static final SagaProperties DEFAULT_PROPS =
-            new SagaProperties(3, 1000L, 5000L, 8484, null, null, null, null, null, null);
+            new SagaProperties(3, 1000L, 5000L, 8484, null, null, null, null, null, null, null, null);
 
     @BeforeEach
     void setUp() {
