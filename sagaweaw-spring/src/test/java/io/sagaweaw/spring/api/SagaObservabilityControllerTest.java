@@ -51,7 +51,7 @@ class SagaObservabilityControllerTest {
     void setUp() {
         controller = new SagaObservabilityController(
                 sagaRepository, deadLetterRepository, sagaEventRepository,
-                sagaStepRepository, outboxMessageRepository, engine, mapper, DEFAULT_PROPS);
+                sagaStepRepository, outboxMessageRepository, engine, mapper, DEFAULT_PROPS, null);
     }
 
     @Nested

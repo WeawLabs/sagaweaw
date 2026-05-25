@@ -1,4 +1,4 @@
-import type { SagaInstance, SagaMetrics, SagaEvent, DeadLetter, RetryingStep, SagaNameStats, StepStats } from './types'
+import type { SagaInstance, SagaMetrics, SagaEvent, DeadLetter, RetryingStep, SagaNameStats, StepStats, StepDefinition } from './types'
 import { getToken } from '../auth'
 
 const BASE = '/api'
@@ -24,8 +24,12 @@ async function get<T>(path: string): Promise<T> {
   return res.json()
 }
 
-async function post(path: string): Promise<void> {
-  const res = await fetch(`${BASE}${path}`, { method: 'POST', headers: authHeaders() })
+async function post(path: string, body?: unknown): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: { ...authHeaders(), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  })
   if (res.status === 403 || res.status === 401) {
     unauthHandler?.()
     throw new AuthError(`${res.status} ${res.statusText}`)
@@ -54,7 +58,8 @@ export const api = {
     },
     get:     (id: string) => get<SagaInstance>(`/sagas/${id}`),
     events:  (id: string) => get<SagaEvent[]>(`/sagas/${id}/events`),
-    related: (id: string) => get<SagaInstance[]>(`/sagas/${id}/related`),
+    related:    (id: string)       => get<SagaInstance[]>(`/sagas/${id}/related`),
+    definition: (sagaName: string) => get<StepDefinition[]>(`/sagas/definition/${encodeURIComponent(sagaName)}`),
     metrics:    ()          => get<SagaMetrics>('/sagas/metrics'),
     retrying:   ()          => get<RetryingStep[]>('/sagas/steps/retrying'),
     stuck:      ()          => get<SagaInstance[]>('/sagas/stuck'),
@@ -67,6 +72,7 @@ export const api = {
       if (params?.includeReprocessed) q.set('includeReprocessed', 'true')
       return get<DeadLetter[]>(`/dead-letters?${q}`)
     },
-    reprocess: (id: string) => post(`/dead-letters/${id}/reprocess`),
+    reprocess:      (id: string)    => post(`/dead-letters/${id}/reprocess`),
+    reprocessBatch: (ids: string[]) => post('/dead-letters/reprocess-batch', { ids }),
   },
 }

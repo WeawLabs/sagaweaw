@@ -8,12 +8,14 @@ export default function DeadLetters() {
   const { t, i18n } = useTranslation()
   const locale = i18n.language.startsWith('pt') ? 'pt-BR' : 'en-US'
 
-  const [items,         setItems]         = useState<DeadLetter[]>([])
-  const [loading,       setLoading]       = useState(true)
-  const [error,         setError]         = useState<string | null>(null)
-  const [reprocessing,  setReprocessing]  = useState<Set<string>>(new Set())
-  const [expandedTrace, setExpandedTrace] = useState<Set<string>>(new Set())
-  const [expandedCtx,   setExpandedCtx]   = useState<Set<string>>(new Set())
+  const [items,           setItems]           = useState<DeadLetter[]>([])
+  const [loading,         setLoading]         = useState(true)
+  const [error,           setError]           = useState<string | null>(null)
+  const [reprocessing,    setReprocessing]    = useState<Set<string>>(new Set())
+  const [selected,        setSelected]        = useState<Set<string>>(new Set())
+  const [batchProcessing, setBatchProcessing] = useState(false)
+  const [expandedTrace,   setExpandedTrace]   = useState<Set<string>>(new Set())
+  const [expandedCtx,     setExpandedCtx]     = useState<Set<string>>(new Set())
 
   const load = useCallback(async () => {
     try {
@@ -27,6 +29,28 @@ export default function DeadLetters() {
   }, [t])
 
   useEffect(() => { load() }, [load])
+
+  function toggleSelected(id: string) {
+    setSelected(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
+  }
+
+  function toggleAll() {
+    setSelected(s => s.size === items.length ? new Set() : new Set(items.map(i => i.id)))
+  }
+
+  async function reprocessSelected() {
+    if (selected.size === 0) return
+    setBatchProcessing(true)
+    try {
+      await api.deadLetters.reprocessBatch([...selected])
+      setSelected(new Set())
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('dl.reprocessError'))
+    } finally {
+      setBatchProcessing(false)
+    }
+  }
 
   async function reprocess(id: string) {
     setReprocessing(s => new Set(s).add(id))
@@ -52,7 +76,7 @@ export default function DeadLetters() {
   return (
     <div className="h-full overflow-y-auto pb-4">
       {/* title bar */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <h2 className="text-[16px] font-semibold text-ink">{t('dl.title')}</h2>
           {items.length > 0 && (
@@ -61,6 +85,29 @@ export default function DeadLetters() {
             </span>
           )}
         </div>
+        {items.length > 0 && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleAll}
+              className="text-[12px] text-gray-500 hover:text-ink transition-colors"
+            >
+              {selected.size === items.length ? t('dl.deselectAll') : t('dl.selectAll')}
+            </button>
+            {selected.size > 0 && (
+              <button
+                onClick={reprocessSelected}
+                disabled={batchProcessing}
+                className="px-3 py-1.5 rounded-lg text-[12px] font-semibold
+                           bg-ink text-canvas hover:bg-accent hover:text-ink
+                           transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {batchProcessing
+                  ? t('dl.reprocessing')
+                  : t('dl.reprocessSelected', { count: selected.size })}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {error && <div className="error-card mb-4 text-[13px]">{error}</div>}
@@ -82,6 +129,12 @@ export default function DeadLetters() {
             <div key={dl.id} className="bg-surface rounded-xl border border-border overflow-hidden">
               <div className="flex items-start gap-3 px-4 py-3 pb-2">
 
+                <input
+                  type="checkbox"
+                  checked={selected.has(dl.id)}
+                  onChange={() => toggleSelected(dl.id)}
+                  className="mt-[5px] w-[14px] h-[14px] flex-shrink-0 accent-ink cursor-pointer"
+                />
                 <div className="mt-[5px] w-[7px] h-[7px] rounded-full flex-shrink-0 bg-fail" />
 
                 <div className="flex-1 min-w-0">

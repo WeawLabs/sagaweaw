@@ -14,6 +14,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Scans all @Saga beans at startup, compiles their SagaFlow,
@@ -100,5 +101,11 @@ public class SagaRegistry {
 
     public Map<Class<?>, SagaFlow<?>> all() {
         return Collections.unmodifiableMap(registry);
+    }
+
+    public Optional<SagaFlow<?>> findByName(String sagaName) {
+        return registry.values().stream()
+                .filter(f -> f.sagaName().equals(sagaName))
+                .findFirst();
     }
 }

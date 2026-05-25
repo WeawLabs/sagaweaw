@@ -160,9 +160,10 @@ public class SagaAutoConfiguration {
             OutboxMessageRepository outboxMessageRepository,
             SpringSagaEngine engine,
             SagaMapper mapper,
-            SagaProperties properties) {
+            SagaProperties properties,
+            SagaRegistry sagaRegistry) {
         return new SagaObservabilityController(sagaRepository, deadLetterRepository,
-                sagaEventRepository, sagaStepRepository, outboxMessageRepository, engine, mapper, properties);
+                sagaEventRepository, sagaStepRepository, outboxMessageRepository, engine, mapper, properties, sagaRegistry);
     }
 
     @Bean

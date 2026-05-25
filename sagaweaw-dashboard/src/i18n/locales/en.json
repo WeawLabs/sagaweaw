@@ -78,7 +78,12 @@
     "attempt":           "attempt {{current}}/{{max}}",
     "attemptOpen":       "attempt {{current}}",
     "nextRetry":         "Next retry: {{time}}",
-    "related":           "Related sagas"
+    "related":           "Related sagas",
+    "tabFlow":           "Flow",
+    "flowNoData":        "Flow diagram not available for this saga type.",
+    "flowCompensable":   "Compensable (has rollback)",
+    "flowPivot":         "Pivot (point of no return)",
+    "flowRetriable":     "Retriable (infinite retry)"
   },
   "sidebar": {
     "filters":         "Filters",
@@ -111,6 +116,9 @@
     "trace":           "Stack trace",
     "expandCtx":       "View context",
     "collapseCtx":     "Close context",
-    "context":          "Context snapshot"
+    "context":          "Context snapshot",
+    "selectAll":        "Select all",
+    "deselectAll":      "Deselect all",
+    "reprocessSelected": "Reprocess {{count}}"
   }
 }

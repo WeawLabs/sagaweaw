@@ -2,7 +2,9 @@ package io.sagaweaw.spring.api;
 
 import io.sagaweaw.core.SagaEngine.SagaNotFoundException;
 import io.sagaweaw.core.SagaInstance;
+import io.sagaweaw.core.SagaStep;
 import io.sagaweaw.spring.config.SagaProperties;
+import io.sagaweaw.spring.engine.SagaRegistry;
 import io.sagaweaw.spring.engine.SpringSagaEngine;
 import io.sagaweaw.spring.mapper.SagaMapper;
 import io.sagaweaw.spring.repository.DeadLetterRepository;
@@ -46,6 +48,7 @@ public class SagaObservabilityController {
     private final SpringSagaEngine        engine;
     private final SagaMapper              mapper;
     private final SagaProperties          properties;
+    private final SagaRegistry            registry;
 
     @GetMapping
     public List<SagaInstance> list(
@@ -113,6 +116,24 @@ public class SagaObservabilityController {
         Instant threshold = Instant.now().minus(minutes, MINUTES);
         return sagaRepository.findStuck(threshold, PageRequest.of(0, 50))
                 .stream().map(mapper::toInstance).toList();
+    }
+
+    public record StepDefinition(String name, String type, int order, boolean compensable) {}
+
+    @GetMapping("/definition/{sagaName}")
+    public ResponseEntity<List<StepDefinition>> definition(@PathVariable String sagaName) {
+        return registry.findByName(sagaName)
+                .map(flow -> {
+                    List<SagaStep<?>> steps = (List<SagaStep<?>>) flow.steps();
+                    List<StepDefinition> result = new ArrayList<>();
+                    for (int i = 0; i < steps.size(); i++) {
+                        SagaStep<?> s = steps.get(i);
+                        result.add(new StepDefinition(s.name(), s.type().name(), i + 1, s.canBeCompensated()));
+                    }
+                    return result;
+                })
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{id}")

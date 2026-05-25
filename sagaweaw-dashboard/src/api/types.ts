@@ -103,3 +103,11 @@ export interface DeadLetter {
   reprocessedAt: string | null
   reprocessedBy: string | null
 }
+
+
+export interface StepDefinition {
+  name:        string
+  type:        'COMPENSABLE' | 'PIVOT' | 'RETRIABLE'
+  order:       number
+  compensable: boolean
+}

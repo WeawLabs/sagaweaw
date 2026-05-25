@@ -78,7 +78,12 @@
     "attempt":           "tentativa {{current}}/{{max}}",
     "attemptOpen":       "tentativa {{current}}",
     "nextRetry":         "Próxima tentativa: {{time}}",
-    "related":           "Sagas relacionadas"
+    "related":           "Sagas relacionadas",
+    "tabFlow":           "Fluxo",
+    "flowNoData":        "Diagrama de fluxo indisponível para este tipo de saga.",
+    "flowCompensable":   "Compensável (tem rollback)",
+    "flowPivot":         "Pivot (ponto sem retorno)",
+    "flowRetriable":     "Retriable (retry infinito)"
   },
   "sidebar": {
     "filters":         "Filtros",
@@ -111,6 +116,9 @@
     "trace":           "Stack trace",
     "expandCtx":       "Ver contexto",
     "collapseCtx":     "Fechar contexto",
-    "context":          "Snapshot de contexto"
+    "context":          "Snapshot de contexto",
+    "selectAll":        "Selecionar todos",
+    "deselectAll":      "Desmarcar todos",
+    "reprocessSelected": "Reprocessar {{count}}"
   }
 }
