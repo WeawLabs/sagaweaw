@@ -77,7 +77,8 @@
     "compensatedLabel":  "compensado",
     "attempt":           "tentativa {{current}}/{{max}}",
     "attemptOpen":       "tentativa {{current}}",
-    "nextRetry":         "Próxima tentativa: {{time}}"
+    "nextRetry":         "Próxima tentativa: {{time}}",
+    "related":           "Sagas relacionadas"
   },
   "sidebar": {
     "filters":         "Filtros",

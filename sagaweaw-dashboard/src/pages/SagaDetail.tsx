@@ -132,9 +132,10 @@ export default function SagaDetail() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
 
-  const [saga,  setSaga]  = useState<SagaInstance | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [tab,   setTab]   = useState<'timeline' | 'context'>('timeline')
+  const [saga,    setSaga]    = useState<SagaInstance | null>(null)
+  const [related, setRelated] = useState<SagaInstance[]>([])
+  const [error,   setError]   = useState<string | null>(null)
+  const [tab,     setTab]     = useState<'timeline' | 'context'>('timeline')
 
   const locale = i18n.language.startsWith('pt') ? 'pt-BR' : 'en-US'
 
@@ -156,6 +157,8 @@ export default function SagaDetail() {
       if (saga && TERMINAL.has(saga.status)) return
       load()
     }, 3000)
+
+    api.sagas.related(id!).then(setRelated).catch(() => {})
 
     return () => { active = false; clearInterval(interval) }
   }, [id, saga?.status, t])
@@ -278,6 +281,42 @@ export default function SagaDetail() {
           <pre className="text-[14px] text-ink leading-relaxed overflow-x-auto p-5 font-mono">
             {contextJson}
           </pre>
+        </div>
+      )}
+
+      {related.length > 0 && (
+        <div className="mt-5">
+          <div className="text-[11px] font-semibold text-ink/50 uppercase tracking-wider mb-2">
+            {t('detail.related')}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {related.map(r => {
+              const dur = r.completedAt
+                ? new Date(r.completedAt).getTime() - new Date(r.createdAt).getTime()
+                : null
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => navigate(`/sagas/${r.id}`)}
+                  className="bg-surface rounded-lg border border-border text-left px-3 py-2
+                             hover:border-accent hover:shadow-sm transition-all duration-200 w-full"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[13px] font-semibold text-ink truncate">{r.name}</span>
+                      <span className="text-[11px] text-gray-500 font-mono">#{r.id.slice(0, 8)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {dur !== null && (
+                        <span className="text-[12px] text-gray-500">{fmtDuration(dur)}</span>
+                      )}
+                      <StatusBadge status={r.status} />
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

@@ -29,6 +29,10 @@ import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.sagaweaw.core.IdempotencyKey;
+import io.sagaweaw.core.SagaStatus;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +65,7 @@ public class SpringSagaEngine implements SagaEngine {
     @Override
     @Transactional
     public <C extends SagaContext> SagaExecution start(SagaFlow<C> flow, C context,
-                               io.sagaweaw.core.IdempotencyKey idempotencyKey) {
+                               IdempotencyKey idempotencyKey) {
         Optional<SagaEntity> existing =
                 sagaRepository.findByIdempotencyKey(idempotencyKey.value());
 
@@ -117,7 +121,7 @@ public class SpringSagaEngine implements SagaEngine {
 
     @Override
     @Transactional
-    public void transition(String sagaId, io.sagaweaw.core.SagaStatus newStatus) {
+    public void transition(String sagaId, SagaStatus newStatus) {
         SagaEntity saga = findEntityById(sagaId);
         int updated = sagaRepository.updateStatusWithVersion(
                 sagaId, newStatus.persistenceName(), saga.getVersion(), Instant.now());
@@ -414,8 +418,8 @@ public class SpringSagaEngine implements SagaEngine {
     }
 
     private String stackTraceOf(Exception e) {
-        java.io.StringWriter sw = new java.io.StringWriter();
-        e.printStackTrace(new java.io.PrintWriter(sw));
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
         return sw.toString();
     }
 

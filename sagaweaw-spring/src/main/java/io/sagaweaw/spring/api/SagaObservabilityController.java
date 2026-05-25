@@ -23,8 +23,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
@@ -115,6 +120,41 @@ public class SagaObservabilityController {
         return engine.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private static final Pattern CONTEXT_VALUE = Pattern.compile(":\"([a-zA-Z0-9\\-_]{4,60})\"");
+
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<SagaInstance>> related(@PathVariable String id) {
+        return sagaRepository.findById(id)
+                .map(saga -> {
+                    List<String> searchTerms = extractContextValues(saga.getContextJson());
+                    if (searchTerms.isEmpty()) return List.<SagaInstance>of();
+
+                    Set<String> seen = new HashSet<>(Set.of(id));
+                    List<SagaInstance> related = new ArrayList<>();
+                    PageRequest small = PageRequest.of(0, 6, Sort.by("createdAt").descending());
+
+                    for (String term : searchTerms) {
+                        if (related.size() >= 10) break;
+                        sagaRepository.findByContextContaining("%" + term + "%", small)
+                                .stream()
+                                .filter(e -> seen.add(e.getId()))
+                                .map(mapper::toInstance)
+                                .forEach(related::add);
+                    }
+                    return related.subList(0, Math.min(10, related.size()));
+                })
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private List<String> extractContextValues(String contextJson) {
+        if (contextJson == null || contextJson.isBlank() || contextJson.equals("{}")) return List.of();
+        List<String> values = new ArrayList<>();
+        Matcher m = CONTEXT_VALUE.matcher(contextJson);
+        while (m.find()) values.add(m.group(1));
+        return values.stream().distinct().limit(5).toList();
     }
 
     @GetMapping("/{id}/events")
