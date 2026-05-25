@@ -2,6 +2,7 @@ package io.sagaweaw.spring.api;
 
 import io.sagaweaw.core.SagaInstance;
 import io.sagaweaw.core.SagaStatus;
+import io.sagaweaw.spring.config.SagaProperties;
 import io.sagaweaw.spring.engine.SpringSagaEngine;
 import io.sagaweaw.spring.mapper.SagaMapper;
 import io.sagaweaw.spring.repository.DeadLetterRepository;
@@ -43,11 +44,14 @@ class SagaObservabilityControllerTest {
 
     private SagaObservabilityController controller;
 
+    private static final SagaProperties DEFAULT_PROPS =
+            new SagaProperties(3, 1000L, 5000L, 8484, null, null, null, null, null);
+
     @BeforeEach
     void setUp() {
         controller = new SagaObservabilityController(
                 sagaRepository, deadLetterRepository, sagaEventRepository,
-                sagaStepRepository, outboxMessageRepository, engine, mapper);
+                sagaStepRepository, outboxMessageRepository, engine, mapper, DEFAULT_PROPS, null);
     }
 
     @Nested
@@ -57,7 +61,7 @@ class SagaObservabilityControllerTest {
         void without_filters_calls_findAllWithSteps_with_pageable() {
             when(sagaRepository.findAllWithSteps(any())).thenReturn(List.of());
 
-            controller.list(0, 50, null, null, null, null, null, null);
+            controller.list(0, 50, null, null, null, null, null, null, null);
 
             verify(sagaRepository).findAllWithSteps(
                     PageRequest.of(0, 50, Sort.by("createdAt").descending()));
@@ -67,7 +71,7 @@ class SagaObservabilityControllerTest {
         void with_status_filter_uses_pageable() {
             when(sagaRepository.findByStatusOrderByCreatedAtDesc(eq("FAILED"), any())).thenReturn(List.of());
 
-            controller.list(0, 10, "FAILED", null, null, null, null, null);
+            controller.list(0, 10, "FAILED", null, null, null, null, null, null);
 
             verify(sagaRepository).findByStatusOrderByCreatedAtDesc(
                     eq("FAILED"),
@@ -78,7 +82,7 @@ class SagaObservabilityControllerTest {
         void with_name_filter_uses_pageable() {
             when(sagaRepository.findByNameContaining(eq("order-processing"), any())).thenReturn(List.of());
 
-            controller.list(2, 25, null, "order-processing", null, null, null, null);
+            controller.list(2, 25, null, "order-processing", null, null, null, null, null);
 
             verify(sagaRepository).findByNameContaining(
                     eq("order-processing"),
@@ -92,7 +96,7 @@ class SagaObservabilityControllerTest {
             when(sagaRepository.findByIdempotencyKey("order-123")).thenReturn(Optional.of(entity));
             when(mapper.toInstance(entity)).thenReturn(instance);
 
-            List<SagaInstance> result = controller.list(0, 50, null, null, null, "order-123", null, null);
+            List<SagaInstance> result = controller.list(0, 50, null, null, null, null, "order-123", null, null);
 
             assertThat(result).containsExactly(instance);
         }
@@ -104,7 +108,7 @@ class SagaObservabilityControllerTest {
             when(sagaRepository.findAllWithSteps(any())).thenReturn(List.of(entity));
             when(mapper.toInstance(entity)).thenReturn(instance);
 
-            List<SagaInstance> result = controller.list(0, 50, null, null, null, null, null, null);
+            List<SagaInstance> result = controller.list(0, 50, null, null, null, null, null, null, null);
 
             assertThat(result).containsExactly(instance);
         }

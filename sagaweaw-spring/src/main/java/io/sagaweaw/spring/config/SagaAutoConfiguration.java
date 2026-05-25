@@ -56,6 +56,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.io.IOException;
 import java.util.List;
 
 @AutoConfiguration(afterName = {
@@ -154,13 +155,15 @@ public class SagaAutoConfiguration {
     public SagaObservabilityController sagaObservabilityController(
             SagaRepository sagaRepository,
             DeadLetterRepository deadLetterRepository,
-            io.sagaweaw.spring.repository.SagaEventRepository sagaEventRepository,
-            io.sagaweaw.spring.repository.SagaStepRepository sagaStepRepository,
-            io.sagaweaw.spring.repository.OutboxMessageRepository outboxMessageRepository,
+            SagaEventRepository sagaEventRepository,
+            SagaStepRepository sagaStepRepository,
+            OutboxMessageRepository outboxMessageRepository,
             SpringSagaEngine engine,
-            SagaMapper mapper) {
+            SagaMapper mapper,
+            SagaProperties properties,
+            SagaRegistry sagaRegistry) {
         return new SagaObservabilityController(sagaRepository, deadLetterRepository,
-                sagaEventRepository, sagaStepRepository, outboxMessageRepository, engine, mapper);
+                sagaEventRepository, sagaStepRepository, outboxMessageRepository, engine, mapper, properties, sagaRegistry);
     }
 
     @Bean
@@ -210,7 +213,7 @@ public class SagaAutoConfiguration {
                     .resourceChain(true)
                     .addResolver(new PathResourceResolver() {
                         @Override
-                        protected Resource getResource(String resourcePath, Resource location) throws java.io.IOException {
+                        protected Resource getResource(String resourcePath, Resource location) throws IOException {
                             if (resourcePath.isEmpty() || resourcePath.equals("/")) {
                                 return new ClassPathResource("META-INF/sagaweaw-dashboard/index.html");
                             }

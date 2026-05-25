@@ -2,6 +2,9 @@ package io.sagaweaw.spring.api;
 
 import io.sagaweaw.core.SagaEngine.SagaNotFoundException;
 import io.sagaweaw.core.SagaInstance;
+import io.sagaweaw.core.SagaStep;
+import io.sagaweaw.spring.config.SagaProperties;
+import io.sagaweaw.spring.engine.SagaRegistry;
 import io.sagaweaw.spring.engine.SpringSagaEngine;
 import io.sagaweaw.spring.mapper.SagaMapper;
 import io.sagaweaw.spring.repository.DeadLetterRepository;
@@ -22,9 +25,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @RestController
 @RequestMapping("/api/sagas")
@@ -38,6 +47,8 @@ public class SagaObservabilityController {
     private final OutboxMessageRepository outboxMessageRepository;
     private final SpringSagaEngine        engine;
     private final SagaMapper              mapper;
+    private final SagaProperties          properties;
+    private final SagaRegistry            registry;
 
     @GetMapping
     public List<SagaInstance> list(
@@ -46,6 +57,7 @@ public class SagaObservabilityController {
             @RequestParam(required = false)     String status,
             @RequestParam(required = false)     String name,
             @RequestParam(required = false)     String id,
+            @RequestParam(required = false)     String contextSearch,
             @RequestParam(required = false)     String idempotencyKey,
             @RequestParam(required = false)     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
             @RequestParam(required = false)     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to) {
@@ -57,6 +69,11 @@ public class SagaObservabilityController {
                     .map(mapper::toInstance)
                     .map(List::of)
                     .orElse(List.of());
+        }
+
+        if (contextSearch != null && !contextSearch.isBlank()) {
+            return sagaRepository.findByContextContaining("%" + contextSearch + "%", pageable)
+                    .stream().map(mapper::toInstance).toList();
         }
 
         if (id != null) {
@@ -92,11 +109,73 @@ public class SagaObservabilityController {
                 .stream().map(mapper::toInstance).toList();
     }
 
+    @GetMapping("/stuck")
+    public List<SagaInstance> stuck() {
+        SagaProperties.Health cfg = properties.health();
+        int minutes   = cfg != null ? cfg.stuckThresholdMinutes() : 15;
+        Instant threshold = Instant.now().minus(minutes, MINUTES);
+        return sagaRepository.findStuck(threshold, PageRequest.of(0, 50))
+                .stream().map(mapper::toInstance).toList();
+    }
+
+    public record StepDefinition(String name, String type, int order, boolean compensable) {}
+
+    @GetMapping("/definition/{sagaName}")
+    public ResponseEntity<List<StepDefinition>> definition(@PathVariable String sagaName) {
+        return registry.findByName(sagaName)
+                .map(flow -> {
+                    List<SagaStep<?>> steps = (List<SagaStep<?>>) flow.steps();
+                    List<StepDefinition> result = new ArrayList<>();
+                    for (int i = 0; i < steps.size(); i++) {
+                        SagaStep<?> s = steps.get(i);
+                        result.add(new StepDefinition(s.name(), s.type().name(), i + 1, s.canBeCompensated()));
+                    }
+                    return result;
+                })
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SagaInstance> get(@PathVariable String id) {
         return engine.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private static final Pattern CONTEXT_VALUE = Pattern.compile(":\"([a-zA-Z0-9\\-_]{4,60})\"");
+
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<SagaInstance>> related(@PathVariable String id) {
+        return sagaRepository.findById(id)
+                .map(saga -> {
+                    List<String> searchTerms = extractContextValues(saga.getContextJson());
+                    if (searchTerms.isEmpty()) return List.<SagaInstance>of();
+
+                    Set<String> seen = new HashSet<>(Set.of(id));
+                    List<SagaInstance> related = new ArrayList<>();
+                    PageRequest small = PageRequest.of(0, 6, Sort.by("createdAt").descending());
+
+                    for (String term : searchTerms) {
+                        if (related.size() >= 10) break;
+                        sagaRepository.findByContextContaining("%" + term + "%", small)
+                                .stream()
+                                .filter(e -> seen.add(e.getId()))
+                                .map(mapper::toInstance)
+                                .forEach(related::add);
+                    }
+                    return related.subList(0, Math.min(10, related.size()));
+                })
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private List<String> extractContextValues(String contextJson) {
+        if (contextJson == null || contextJson.isBlank() || contextJson.equals("{}")) return List.of();
+        List<String> values = new ArrayList<>();
+        Matcher m = CONTEXT_VALUE.matcher(contextJson);
+        while (m.find()) values.add(m.group(1));
+        return values.stream().distinct().limit(5).toList();
     }
 
     @GetMapping("/{id}/events")

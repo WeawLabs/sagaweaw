@@ -25,13 +25,14 @@ export default function SagaFeed() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
 
-  const [sagas,   setSagas]   = useState<SagaInstance[]>([])
-  const [metrics, setMetrics] = useState<SagaMetrics | null>(null)
-  const [status,  setStatus]  = useState<SagaStatusName | ''>('')
-  const [name,    setName]    = useState('')
-  const [page,    setPage]    = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState<string | null>(null)
+  const [sagas,      setSagas]      = useState<SagaInstance[]>([])
+  const [stuckSagas, setStuckSagas] = useState<SagaInstance[]>([])
+  const [metrics,    setMetrics]    = useState<SagaMetrics | null>(null)
+  const [status,     setStatus]     = useState<SagaStatusName | ''>('')
+  const [name,       setName]       = useState('')
+  const [page,       setPage]       = useState(0)
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState<string | null>(null)
 
   const locale = i18n.language.startsWith('pt') ? 'pt-BR' : 'en-US'
 
@@ -42,14 +43,22 @@ export default function SagaFeed() {
     return new Date(iso).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })
   }
 
+  const loadStuck = useCallback(async () => {
+    try {
+      setStuckSagas(await api.sagas.stuck())
+    } catch { /* informational — silent */ }
+  }, [])
+
   const load = useCallback(async () => {
     try {
-      const isIdSearch = name.startsWith('#')
+      const isIdSearch      = name.startsWith('#')
+      const isContextSearch = name.startsWith('@')
       const [s, m] = await Promise.all([
         api.sagas.list({
           status: status || undefined,
-          name:   isIdSearch ? undefined : name || undefined,
-          id:     isIdSearch ? name.slice(1) || undefined : undefined,
+          name:   isIdSearch || isContextSearch ? undefined : name || undefined,
+          id:     isIdSearch      ? name.slice(1) || undefined : undefined,
+          contextSearch: isContextSearch ? name.slice(1) || undefined : undefined,
         }),
         api.sagas.metrics(),
       ])
@@ -64,6 +73,12 @@ export default function SagaFeed() {
   }, [status, name, t])
 
   const { connected } = useStomp('/topic/sagas', load)
+
+  useEffect(() => {
+    loadStuck()
+    const id = setInterval(loadStuck, 10000)
+    return () => clearInterval(id)
+  }, [loadStuck])
 
   // Reset to live page when filters change
   useEffect(() => { setPage(0) }, [status, name])
@@ -104,6 +119,41 @@ export default function SagaFeed() {
           )}
 
           <div className="flex-1 overflow-y-auto flex flex-col gap-1.5 pt-0.5 pb-4">
+
+            {stuckSagas.length > 0 && (
+              <div className="flex flex-col gap-1 rounded-xl border border-fail/40 bg-fail/5 px-3 py-2 flex-shrink-0">
+                <span className="text-[11px] font-semibold text-fail/80 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="w-[6px] h-[6px] rounded-full bg-fail animate-pulse inline-block" />
+                  {t('feed.stuck', { count: stuckSagas.length })}
+                </span>
+                {stuckSagas.map(saga => (
+                  <button
+                    key={saga.id}
+                    onClick={() => navigate(`/sagas/${saga.id}`)}
+                    className="bg-surface rounded-lg border border-fail/40 text-left overflow-hidden
+                               hover:border-fail hover:shadow-sm transition-all duration-200 w-full"
+                  >
+                    <div className="px-3 py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-[13px] font-semibold text-ink truncate">{saga.name}</span>
+                          <span className="text-[11px] text-gray-600 font-mono">#{saga.id.slice(0, 8)}</span>
+                        </div>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold
+                                         bg-fail text-white uppercase tracking-wider flex-shrink-0">
+                          {t('feed.stuckBadge')}
+                        </span>
+                      </div>
+                      <div className="mt-0.5 text-[12px] text-gray-500">
+                        {t('feed.stuckSince', { time: fmtAge(saga.updatedAt) })}
+                      </div>
+                    </div>
+                    <div className="h-[3px] w-full bg-fail" />
+                  </button>
+                ))}
+              </div>
+            )}
+
             {!loading && pagedSagas.length === 0 && (
               <div className="bg-surface rounded-[10px] border border-border px-4 py-8
                               text-center text-[13px] text-gray-400">

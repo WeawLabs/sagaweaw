@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
-import type { SagaInstance, StepInstance } from '../api/types'
+import type { SagaInstance, StepInstance, StepDefinition } from '../api/types'
 import StatusBadge from '../components/StatusBadge'
 import CopyButton from '../components/CopyButton'
 import { fmtDuration as fmtDur } from '../utils/fmt'
@@ -132,9 +132,11 @@ export default function SagaDetail() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
 
-  const [saga,  setSaga]  = useState<SagaInstance | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [tab,   setTab]   = useState<'timeline' | 'context'>('timeline')
+  const [saga,       setSaga]       = useState<SagaInstance | null>(null)
+  const [related,    setRelated]    = useState<SagaInstance[]>([])
+  const [definition, setDefinition] = useState<StepDefinition[]>([])
+  const [error,      setError]      = useState<string | null>(null)
+  const [tab,        setTab]        = useState<'timeline' | 'context' | 'flow'>('timeline')
 
   const locale = i18n.language.startsWith('pt') ? 'pt-BR' : 'en-US'
 
@@ -157,8 +159,15 @@ export default function SagaDetail() {
       load()
     }, 3000)
 
+    api.sagas.related(id!).then(setRelated).catch(() => {})
+
     return () => { active = false; clearInterval(interval) }
   }, [id, saga?.status, t])
+
+  useEffect(() => {
+    if (!saga?.name) return
+    api.sagas.definition(saga.name).then(setDefinition).catch(() => {})
+  }, [saga?.name])
 
   if (error) return <div className="error-card text-[14px]">{error}</div>
 
@@ -181,6 +190,7 @@ export default function SagaDetail() {
   const tabItems = [
     { key: 'timeline' as const, label: t('detail.tabTimeline') },
     { key: 'context'  as const, label: t('detail.tabContext')  },
+    { key: 'flow'     as const, label: t('detail.tabFlow')     },
   ]
 
   return (
@@ -278,6 +288,85 @@ export default function SagaDetail() {
           <pre className="text-[14px] text-ink leading-relaxed overflow-x-auto p-5 font-mono">
             {contextJson}
           </pre>
+        </div>
+      )}
+
+      {tab === 'flow' && (
+        <div className="bg-surface rounded-xl border border-border p-5">
+          {definition.length === 0 ? (
+            <span className="text-[13px] text-gray-400">{t('detail.flowNoData')}</span>
+          ) : (
+            <div className="flex flex-wrap items-center gap-0">
+              {definition.map((step, i) => {
+                const typeColor =
+                  step.type === 'COMPENSABLE' ? 'border-ok   bg-ok/10   text-ok'
+                : step.type === 'PIVOT'       ? 'border-warn bg-warn/10 text-warn'
+                :                              'border-accent bg-accent/10 text-accent'
+                return (
+                  <div key={step.name} className="flex items-center">
+                    <div className={`flex flex-col items-center px-3 py-2 rounded-xl border-2 ${typeColor} min-w-[90px]`}>
+                      <span className="text-[11px] font-bold uppercase tracking-wider opacity-70">{step.type}</span>
+                      <span className="text-[13px] font-semibold text-ink mt-0.5 text-center">{step.name}</span>
+                      {step.compensable && (
+                        <span className="text-[10px] mt-0.5 opacity-60">↩ compensable</span>
+                      )}
+                    </div>
+                    {i < definition.length - 1 && (
+                      <span className="text-gray-400 text-[18px] px-2">→</span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          <div className="flex gap-4 mt-5 pt-4 border-t border-border flex-wrap">
+            {([
+              { color: 'bg-ok',     label: t('detail.flowCompensable') },
+              { color: 'bg-warn',   label: t('detail.flowPivot')       },
+              { color: 'bg-accent', label: t('detail.flowRetriable')   },
+            ] as const).map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-1.5 text-[12px] text-gray-600">
+                <span className={`w-2.5 h-2.5 rounded-sm ${color} opacity-70`} />
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {related.length > 0 && (
+        <div className="mt-5">
+          <div className="text-[11px] font-semibold text-ink/50 uppercase tracking-wider mb-2">
+            {t('detail.related')}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {related.map(r => {
+              const dur = r.completedAt
+                ? new Date(r.completedAt).getTime() - new Date(r.createdAt).getTime()
+                : null
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => navigate(`/sagas/${r.id}`)}
+                  className="bg-surface rounded-lg border border-border text-left px-3 py-2
+                             hover:border-accent hover:shadow-sm transition-all duration-200 w-full"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-[13px] font-semibold text-ink truncate">{r.name}</span>
+                      <span className="text-[11px] text-gray-500 font-mono">#{r.id.slice(0, 8)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {dur !== null && (
+                        <span className="text-[12px] text-gray-500">{fmtDuration(dur)}</span>
+                      )}
+                      <StatusBadge status={r.status} />
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>
