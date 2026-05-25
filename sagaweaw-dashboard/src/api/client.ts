@@ -24,6 +24,17 @@ async function get<T>(path: string): Promise<T> {
   return res.json()
 }
 
+async function download(path: string, filename: string): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, { headers: authHeaders() })
+  if (res.status === 403 || res.status === 401) { unauthHandler?.(); throw new AuthError(`${res.status}`) }
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+  const blob = await res.blob()
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href = url; a.download = filename; a.click()
+  URL.revokeObjectURL(url)
+}
+
 async function post(path: string, body?: unknown): Promise<void> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
@@ -63,6 +74,13 @@ export const api = {
     metrics:    ()          => get<SagaMetrics>('/sagas/metrics'),
     retrying:   ()          => get<RetryingStep[]>('/sagas/steps/retrying'),
     stuck:      ()          => get<SagaInstance[]>('/sagas/stuck'),
+    exportCsv:  (params?: { status?: string; from?: string }) => {
+      const qs = new URLSearchParams()
+      if (params?.status) qs.set('status', params.status)
+      if (params?.from)   qs.set('from',   params.from)
+      const suffix = params?.status ? `-${params.status.toLowerCase()}` : ''
+      return download(`/sagas/export?${qs}`, `sagas${suffix}.csv`)
+    },
     statsByName: ()         => get<SagaNameStats[]>('/sagas/stats/by-name'),
     stepsStats:  ()         => get<StepStats[]>('/sagas/steps/stats'),
   },
@@ -74,5 +92,6 @@ export const api = {
     },
     reprocess:      (id: string)    => post(`/dead-letters/${id}/reprocess`),
     reprocessBatch: (ids: string[]) => post('/dead-letters/reprocess-batch', { ids }),
+    exportCsv:      ()              => download('/dead-letters/export', 'dead-letters.csv'),
   },
 }

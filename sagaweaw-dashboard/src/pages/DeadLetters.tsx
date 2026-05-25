@@ -6,6 +6,12 @@ import CopyButton from '../components/CopyButton'
 
 export default function DeadLetters() {
   const { t, i18n } = useTranslation()
+  const [exporting, setExporting] = useState(false)
+
+  async function exportCsv() {
+    setExporting(true)
+    try { await api.deadLetters.exportCsv() } finally { setExporting(false) }
+  }
   const locale = i18n.language.startsWith('pt') ? 'pt-BR' : 'en-US'
 
   const [items,           setItems]           = useState<DeadLetter[]>([])
@@ -84,6 +90,13 @@ export default function DeadLetters() {
               {items.length}
             </span>
           )}
+          <button
+            onClick={exportCsv}
+            disabled={exporting || items.length === 0}
+            className="text-[12px] text-gray-500 hover:text-ink transition-colors disabled:opacity-40"
+          >
+            {t('dl.exportCsv')}
+          </button>
         </div>
         {items.length > 0 && (
           <div className="flex items-center gap-2">

@@ -13,7 +13,10 @@ public record SagaProperties(
         Observability observability,
         Health health,
         Dashboard dashboard,
-        Tracing tracing
+        Tracing tracing,
+        Alerts alerts,
+        Data data,
+        Instance instance
 ) {
 
     public record Dashboard(
@@ -66,6 +69,53 @@ public record SagaProperties(
      *     relay-login: sagaweaw
      *     relay-passcode: secret
      */
+    /**
+     * sagaweaw.alerts.webhook-url — HTTP POST endpoint; compatible with Slack, Discord, Teams,
+     * PagerDuty and any generic webhook receiver.
+     * failure-rate-threshold — fraction (0.0–1.0); 0.05 = alert when >5% of terminal sagas failed.
+     * Set to 0 to disable the failure-rate check.
+     */
+    /**
+     * sagaweaw.data.retention-days — sagas in terminal status (COMPLETED, COMPENSATED, FAILED)
+     * older than N days are moved to sagas_archive and removed from the live tables.
+     * Set to 0 (default) to never archive. Dead letters are always kept.
+     */
+    /**
+     * sagaweaw.data.retention-days — COMPLETED and COMPENSATED sagas older than N days
+     * are moved to sagas_archive. Default 0 = never archive.
+     *
+     * sagaweaw.data.failed-retention-days — FAILED sagas are kept longer for investigation
+     * and manual reprocessing. Default 90 days (aligns with LGPD/PCI-DSS 90-day audit trail).
+     * Set to 0 to use the same threshold as retention-days.
+     *
+     * Note: no major competitor (Temporal, Step Functions, Camunda, Conductor) differentiates
+     * retention by status — this is a deliberate Sagaweaw differentiator.
+     */
+    public record Data(
+            @DefaultValue("0")  int retentionDays,
+            @DefaultValue("90") int failedRetentionDays
+    ) {}
+
+    /**
+     * sagaweaw.instance.id — identifies this JVM instance in the sagas table.
+     * Defaults to hostname + random suffix. Set explicitly in multi-pod deployments
+     * where you want stable, readable IDs (e.g. pod name from Kubernetes downward API).
+     *
+     * Example: sagaweaw.instance.id=${HOSTNAME}
+     */
+    public record Instance(String id) {}
+
+    public record Alerts(
+            String webhookUrl,
+            @DefaultValue("true")  boolean onDeadLetter,
+            @DefaultValue("true")  boolean onStuckSaga,
+            @DefaultValue("0.0")   double  failureRateThreshold
+    ) {
+        public boolean isEnabled() {
+            return webhookUrl != null && !webhookUrl.isBlank();
+        }
+    }
+
     public record WebSocket(
             String relayHost,
             @DefaultValue("61613") int relayPort,

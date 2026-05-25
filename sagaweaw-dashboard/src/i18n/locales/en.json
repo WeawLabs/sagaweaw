@@ -50,7 +50,8 @@
     "page":              "Page {{n}}",
     "stuck":             "{{count}} stuck saga(s) — no update for 15+ min",
     "stuckBadge":        "STUCK",
-    "stuckSince":        "last update {{time}}"
+    "stuckSince":        "last update {{time}}",
+    "exportCsv":         "Export CSV"
   },
   "auth": {
     "title":       "Sagaweaw Dashboard",
@@ -119,6 +120,7 @@
     "context":          "Context snapshot",
     "selectAll":        "Select all",
     "deselectAll":      "Deselect all",
-    "reprocessSelected": "Reprocess {{count}}"
+    "reprocessSelected": "Reprocess {{count}}",
+    "exportCsv":        "Export CSV"
   }
 }
