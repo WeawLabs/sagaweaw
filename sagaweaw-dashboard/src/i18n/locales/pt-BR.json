@@ -37,7 +37,7 @@
       "COMPENSATED":  "Compensada",
       "FAILED":       "Falhou"
     },
-    "filterPlaceholder": "Filtrar por nome da saga…",
+    "filterPlaceholder": "nome · #id · @contexto…",
     "counter":           "{{count}} sagas · atualiza a cada 3s",
     "loading":           "Carregando…",
     "loadError":         "Falha ao carregar",
@@ -47,7 +47,10 @@
     "agoSeconds":        "{{n}}s atrás",
     "agoMinutes":        "{{n}}m atrás",
     "counterLive":       "{{count}} sagas · ao vivo",
-    "page":              "Página {{n}}"
+    "page":              "Página {{n}}",
+    "stuck":             "{{count}} saga(s) travada(s) — sem atualização há 15+ min",
+    "stuckBadge":        "TRAVADA",
+    "stuckSince":        "última atualização {{time}}"
   },
   "auth": {
     "title":       "Sagaweaw Dashboard",
@@ -74,7 +77,13 @@
     "compensatedLabel":  "compensado",
     "attempt":           "tentativa {{current}}/{{max}}",
     "attemptOpen":       "tentativa {{current}}",
-    "nextRetry":         "Próxima tentativa: {{time}}"
+    "nextRetry":         "Próxima tentativa: {{time}}",
+    "related":           "Sagas relacionadas",
+    "tabFlow":           "Fluxo",
+    "flowNoData":        "Diagrama de fluxo indisponível para este tipo de saga.",
+    "flowCompensable":   "Compensável (tem rollback)",
+    "flowPivot":         "Pivot (ponto sem retorno)",
+    "flowRetriable":     "Retriable (retry infinito)"
   },
   "sidebar": {
     "filters":         "Filtros",
@@ -107,6 +116,9 @@
     "trace":           "Stack trace",
     "expandCtx":       "Ver contexto",
     "collapseCtx":     "Fechar contexto",
-    "context":          "Snapshot de contexto"
+    "context":          "Snapshot de contexto",
+    "selectAll":        "Selecionar todos",
+    "deselectAll":      "Desmarcar todos",
+    "reprocessSelected": "Reprocessar {{count}}"
   }
 }

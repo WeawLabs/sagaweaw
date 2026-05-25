@@ -36,6 +36,14 @@ public interface SagaRepository extends JpaRepository<SagaEntity, String> {
     List<SagaEntity> findByIdStartingWith(@Param("prefix") String prefix, Pageable pageable);
 
     @EntityGraph(attributePaths = "steps")
+    @Query("SELECT s FROM SagaEntity s WHERE CAST(s.contextJson AS String) LIKE :pattern ORDER BY s.createdAt DESC")
+    List<SagaEntity> findByContextContaining(@Param("pattern") String pattern, Pageable pageable);
+
+    @EntityGraph(attributePaths = "steps")
+    @Query("SELECT s FROM SagaEntity s WHERE s.status IN ('EXECUTING', 'COMPENSATING') AND s.updatedAt < :threshold ORDER BY s.updatedAt ASC")
+    List<SagaEntity> findStuck(@Param("threshold") Instant threshold, Pageable pageable);
+
+    @EntityGraph(attributePaths = "steps")
     @Query("SELECT s FROM SagaEntity s ORDER BY s.createdAt DESC")
     List<SagaEntity> findAllWithSteps(Pageable pageable);
 

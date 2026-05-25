@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,6 +63,27 @@ public class DeadLetterController {
             String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             return ResponseEntity.unprocessableEntity().body(Map.of("error", msg));
         }
+    }
+
+    @PostMapping("/reprocess-batch")
+    public ResponseEntity<Map<String, Long>> reprocessBatch(@RequestBody Map<String, List<String>> body) {
+        List<String> ids = body.getOrDefault("ids", List.of());
+        long reprocessed = 0;
+        long failed      = 0;
+        for (String id : ids) {
+            try {
+                var found = deadLetterRepository.findById(id);
+                if (found.isEmpty()) { failed++; continue; }
+                var dl = found.get();
+                engine.reprocess(dl.getSagaId());
+                dl.markReprocessed("api");
+                deadLetterRepository.save(dl);
+                reprocessed++;
+            } catch (Exception e) {
+                failed++;
+            }
+        }
+        return ResponseEntity.ok(Map.of("reprocessed", reprocessed, "failed", failed));
     }
 
     private Map<String, String> loadSagaNames(List<String> sagaIds) {
