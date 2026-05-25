@@ -87,6 +87,23 @@ public interface SagaRepository extends JpaRepository<SagaEntity, String> {
     @Query("SELECT COUNT(s) FROM SagaEntity s WHERE s.status IN ('EXECUTING', 'COMPENSATING') AND s.updatedAt < :threshold")
     long countStuck(@Param("threshold") Instant threshold);
 
+    @Query("SELECT s FROM SagaEntity s WHERE s.status IN ('COMPLETED', 'COMPENSATED') AND s.updatedAt < :threshold ORDER BY s.updatedAt ASC")
+    List<SagaEntity> findCompletedBefore(@Param("threshold") Instant threshold, Pageable pageable);
+
+    @Query("SELECT s FROM SagaEntity s WHERE s.status = 'FAILED' AND s.updatedAt < :threshold ORDER BY s.updatedAt ASC")
+    List<SagaEntity> findFailedBefore(@Param("threshold") Instant threshold, Pageable pageable);
+
+    @Query(value = """
+            SELECT instance_id,
+                   MAX(updated_at) AS last_seen,
+                   SUM(CASE WHEN status IN ('EXECUTING', 'STARTED', 'COMPENSATING') THEN 1 ELSE 0 END) AS active_sagas
+            FROM sagas
+            WHERE instance_id IS NOT NULL AND updated_at > :since
+            GROUP BY instance_id
+            ORDER BY last_seen DESC
+            """, nativeQuery = true)
+    List<Object[]> findActiveInstances(@Param("since") Instant since);
+
     // Returns 0 on version mismatch — engine must throw OptimisticLockException (ADR-004)
     @Transactional
     @Modifying

@@ -1,6 +1,10 @@
 package io.sagaweaw.spring.config;
 
 import tools.jackson.databind.ObjectMapper;
+import io.sagaweaw.spring.alert.AlertListener;
+import io.sagaweaw.spring.alert.AlertWebhookService;
+import io.sagaweaw.spring.repository.SagaArchiveRepository;
+import io.sagaweaw.spring.scheduler.RetentionScheduler;
 import org.springframework.context.annotation.Import;
 import io.sagaweaw.spring.SagaManager;
 import io.sagaweaw.spring.health.SagaHealthIndicator;
@@ -119,10 +123,11 @@ public class SagaAutoConfiguration {
                                        StepExecutor stepExecutor,
                                        CompensationExecutor compensationExecutor,
                                        SagaMapper mapper,
-                                       ApplicationEventPublisher publisher) {
+                                       ApplicationEventPublisher publisher,
+                                       SagaProperties properties) {
         return new SpringSagaEngine(registry, sagaRepository, stepRepository,
                 eventRepository, deadLetterRepository, stepExecutor,
-                compensationExecutor, mapper, publisher);
+                compensationExecutor, mapper, publisher, properties);
     }
 
     @Bean
@@ -146,6 +151,33 @@ public class SagaAutoConfiguration {
     public RetryScheduler retryScheduler(SagaStepRepository stepRepository,
                                          SpringSagaEngine engine) {
         return new RetryScheduler(stepRepository, engine);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RetentionScheduler retentionScheduler(SagaRepository sagaRepository,
+                                                  SagaStepRepository sagaStepRepository,
+                                                  SagaEventRepository sagaEventRepository,
+                                                  SagaArchiveRepository sagaArchiveRepository,
+                                                  SagaProperties properties) {
+        return new RetentionScheduler(sagaRepository, sagaStepRepository,
+                sagaEventRepository, sagaArchiveRepository, properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.alerts", name = "webhook-url")
+    public AlertWebhookService alertWebhookService(SagaProperties properties) {
+        return new AlertWebhookService(properties);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.alerts", name = "webhook-url")
+    public AlertListener alertListener(AlertWebhookService alertWebhookService,
+                                       SagaRepository sagaRepository,
+                                       SagaProperties properties) {
+        return new AlertListener(alertWebhookService, sagaRepository, properties);
     }
 
     @Bean

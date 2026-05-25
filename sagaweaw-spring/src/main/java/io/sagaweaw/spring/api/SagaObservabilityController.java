@@ -1,6 +1,7 @@
 package io.sagaweaw.spring.api;
 
 import io.sagaweaw.core.SagaEngine.SagaNotFoundException;
+import io.sagaweaw.spring.entity.SagaEntity;
 import io.sagaweaw.core.SagaInstance;
 import io.sagaweaw.core.SagaStep;
 import io.sagaweaw.spring.config.SagaProperties;
@@ -24,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,6 +37,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 import static java.time.temporal.ChronoUnit.MINUTES;
 
 @RestController
@@ -109,6 +115,57 @@ public class SagaObservabilityController {
                 .stream().map(mapper::toInstance).toList();
     }
 
+    @GetMapping("/export")
+    public ResponseEntity<String> export(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from) {
+
+        PageRequest pageable = PageRequest.of(0, 10_000, Sort.by("createdAt").descending());
+        Instant effectFrom = from != null ? from : Instant.EPOCH;
+        Instant effectTo   = Instant.now().plusSeconds(60);
+
+        List<SagaEntity> entities = (status != null)
+                ? sagaRepository.findByStatusAndDateRange(status, effectFrom, effectTo, pageable)
+                : sagaRepository.findByDateRange(effectFrom, effectTo, pageable);
+
+        StringBuilder csv = new StringBuilder("sagaId,sagaName,stepName,status,createdAt,errorMessage,context\n");
+        for (var e : entities) {
+            var failedStep = e.getSteps().stream()
+                    .filter(s -> "FAILED".equals(s.getStatus()))
+                    .findFirst();
+            appendCsvRow(csv,
+                    e.getId(),
+                    e.getName(),
+                    failedStep.map(s -> s.getStepName()).orElse(""),
+                    e.getStatus(),
+                    e.getCreatedAt() != null ? e.getCreatedAt().toString() : "",
+                    failedStep.map(s -> s.getLastError()).orElse(""),
+                    truncateCsv(e.getContextJson(), 200));
+        }
+
+        String safeStatus = status != null ? status.replaceAll("[^A-Z_]", "") : null;
+        String filename   = safeStatus != null && !safeStatus.isBlank()
+                ? "sagas-" + safeStatus.toLowerCase() + ".csv" : "sagas.csv";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
+        headers.setContentDispositionFormData("attachment", filename);
+        return ResponseEntity.ok().headers(headers).body(csv.toString());
+    }
+
+    public record InstanceInfo(String id, Instant lastSeen, long activeSagas) {}
+
+    @GetMapping("/instances")
+    public List<InstanceInfo> instances(
+            @RequestParam(defaultValue = "2") int hoursBack) {
+        Instant since = Instant.now().minus(hoursBack, ChronoUnit.HOURS);
+        return sagaRepository.findActiveInstances(since).stream()
+                .map(row -> new InstanceInfo(
+                        (String) row[0],
+                        ((Timestamp) row[1]).toInstant(),
+                        ((Number) row[2]).longValue()))
+                .toList();
+    }
+
     @GetMapping("/stuck")
     public List<SagaInstance> stuck() {
         SagaProperties.Health cfg = properties.health();
@@ -168,6 +225,27 @@ public class SagaObservabilityController {
                 })
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    private static void appendCsvRow(StringBuilder sb, String... fields) {
+        for (int i = 0; i < fields.length; i++) {
+            if (i > 0) sb.append(',');
+            sb.append(escapeCsv(fields[i]));
+        }
+        sb.append('\n');
+    }
+
+    private static String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
+    private static String truncateCsv(String value, int max) {
+        if (value == null) return "";
+        return value.length() > max ? value.substring(0, max) + "…" : value;
     }
 
     private List<String> extractContextValues(String contextJson) {

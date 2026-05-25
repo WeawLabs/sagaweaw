@@ -197,6 +197,16 @@ export default function SagaFeed() {
             })}
           </div>
 
+          <div className="flex items-center justify-end py-1 border-t border-border flex-shrink-0">
+            <button
+              onClick={() => api.sagas.exportCsv({ status: status || undefined })}
+              disabled={sagas.length === 0}
+              className="text-[12px] text-gray-400 hover:text-ink transition-colors px-2 disabled:opacity-30"
+            >
+              {t('feed.exportCsv')}
+            </button>
+          </div>
+
           {(page > 0 || sagas.length > PAGE_SIZE) && (
             <div className="flex items-center justify-center gap-4 py-2 border-t border-border
                             text-[12px] text-gray-500 flex-shrink-0">
