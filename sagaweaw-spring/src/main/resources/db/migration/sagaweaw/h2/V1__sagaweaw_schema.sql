@@ -13,9 +13,8 @@ CREATE TABLE IF NOT EXISTS sagas (
     PRIMARY KEY (id)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_sagas_idempotency
-    ON sagas (idempotency_key)
-    WHERE idempotency_key IS NOT NULL;
+-- H2 does not support partial indexes; idempotency_key uniqueness enforced at application level
+CREATE INDEX IF NOT EXISTS idx_sagas_idempotency ON sagas (idempotency_key);
 
 CREATE INDEX IF NOT EXISTS idx_sagas_status ON sagas (status);
 CREATE INDEX IF NOT EXISTS idx_sagas_name   ON sagas (name);
