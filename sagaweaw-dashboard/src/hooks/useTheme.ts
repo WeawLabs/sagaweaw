@@ -4,8 +4,7 @@ type Theme = 'light' | 'dark'
 
 function getInitial(): Theme {
   const saved = localStorage.getItem('sagaweaw-theme') as Theme | null
-  if (saved) return saved
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return saved ?? 'dark'
 }
 
 export function useTheme() {
