@@ -1,4 +1,4 @@
-package io.sagaweaw.examples.order;
+package io.sagaweaw.examples.pix;
 
 import io.sagaweaw.spring.SagaManager;
 import lombok.RequiredArgsConstructor;
@@ -9,29 +9,27 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/pix")
 @RequiredArgsConstructor
-public class OrderController {
+public class PixController {
 
     private final SagaManager sagaManager;
 
     @PostMapping
-    public Map<String, String> placeOrder(@RequestBody OrderRequest request) {
-        var context = new OrderContext(
+    public Map<String, String> send(@RequestBody PixRequest request) {
+        var context = new PixContext(
                 UUID.randomUUID().toString(),
-                request.customerId(),
-                request.itemId(),
-                request.quantity(),
+                request.originAccountId(),
+                request.destinationKey(),
                 request.amount()
         );
-        var execution = sagaManager.start(OrderSaga.class, context);
+        var execution = sagaManager.start(PixPaymentSaga.class, context);
         return Map.of("sagaId", execution.sagaId());
     }
 
-    record OrderRequest(
-            String customerId,
-            String itemId,
-            int quantity,
+    record PixRequest(
+            String originAccountId,
+            String destinationKey,
             BigDecimal amount
     ) {}
 }
