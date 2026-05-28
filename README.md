@@ -8,6 +8,7 @@
 [![CI](https://github.com/amosjuda/sagaweaw/actions/workflows/ci.yml/badge.svg)](https://github.com/amosjuda/sagaweaw/actions)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17+-orange)](https://openjdk.org/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-supported-7F52FF)](https://kotlinlang.org/)
 
 📖 [Documentation](https://doc.sagaweaw.dev) · [README em Português](README.pt-BR.md) · [Discussions](https://github.com/amosjuda/sagaweaw/discussions) · [Issues](https://github.com/amosjuda/sagaweaw/issues)
 
@@ -78,7 +79,7 @@ Step types are inferred from what you declare:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.7</version>
 </dependency>
 <!-- Required for automatic schema creation -->
 <dependency>
@@ -112,6 +113,52 @@ sagaManager.start(OrderSaga.class, new OrderContext(orderId, customerId, itemId,
 ```
 
 That's it. Sagaweaw creates the schema, registers your saga, and handles the rest.
+
+---
+
+## Kotlin
+
+Using Kotlin? Add the `sagaweaw-kotlin` module for idiomatic DSL support — no `Consumer<T>` wrappers, no `::class.java`, no `Optional`.
+
+```xml
+<dependency>
+    <groupId>dev.sagaweaw</groupId>
+    <artifactId>sagaweaw-kotlin</artifactId>
+    <version>1.0.7</version>
+</dependency>
+```
+
+```kotlin
+import io.sagaweaw.kotlin.*
+
+// Context — extend KSagaContext for String? instead of Optional<String>
+data class OrderContext(val orderId: UUID, val amount: BigDecimal) : KSagaContext() {
+    override fun key() = orderId.toString()
+}
+
+// Saga — clean DSL, no Consumer<T> needed
+@Saga(name = "order-processing")
+class OrderSaga(
+    private val inventoryService: InventoryService,
+    private val paymentService: PaymentService,
+) : SagaDefinition<OrderContext> {
+
+    override fun define(saga: SagaBuilder<OrderContext>) = saga
+        .step("reserve-inventory") {
+            invoke { ctx -> inventoryService.reserve(ctx.orderId) }
+            compensate { ctx -> inventoryService.release(ctx.orderId) }
+        }
+        .step("charge-payment") {
+            invoke { ctx -> paymentService.charge(ctx.orderId, ctx.amount) }
+            compensate { ctx -> paymentService.refund(ctx.orderId) }
+            retry(exponentialRetry(3, 5.seconds))
+        }
+        .build()
+}
+
+// Start — reified, no ::class.java
+sagaManager.start<OrderSaga>(context)
+```
 
 ---
 

@@ -22,7 +22,7 @@
          ============================================================ -->
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-parent</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <packaging>pom</packaging>
 
     <name>Sagaweaw</name>
@@ -59,6 +59,7 @@
         <module>sagaweaw-core</module>
         <module>sagaweaw-spring</module>
         <module>sagaweaw-spring-boot-starter</module>
+        <module>sagaweaw-kotlin</module>
         <module>sagaweaw-test</module>
         <module>sagaweaw-examples</module>
     </modules>
