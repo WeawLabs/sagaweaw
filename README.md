@@ -7,7 +7,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/dev.sagaweaw/sagaweaw-spring-boot-starter?color=blue)](https://central.sonatype.com/artifact/dev.sagaweaw/sagaweaw-spring-boot-starter)
 [![CI](https://github.com/amosjuda/sagaweaw/actions/workflows/ci.yml/badge.svg)](https://github.com/amosjuda/sagaweaw/actions)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
-[![Java](https://img.shields.io/badge/Java-21+-orange)](https://openjdk.org/)
+[![Java](https://img.shields.io/badge/Java-17+-orange)](https://openjdk.org/)
 
 📖 [Documentation](https://doc.sagaweaw.dev) · [README em Português](README.pt-BR.md) · [Discussions](https://github.com/amosjuda/sagaweaw/discussions) · [Issues](https://github.com/amosjuda/sagaweaw/issues)
 
@@ -273,7 +273,7 @@ Sagaweaw is actively developed and we'd love your help. Whether it's a bug fix, 
 
 ## Requirements
 
-- Java 21+
+- Java 17 LTS+
 - Spring Boot 3.x or 4.x
 - PostgreSQL 14+ (recommended), MySQL 8.0+, or H2
 
