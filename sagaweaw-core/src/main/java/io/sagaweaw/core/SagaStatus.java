@@ -66,14 +66,13 @@ public sealed interface SagaStatus
      * Returns the string value stored in the {@code sagas.status} column.
      */
     default String persistenceName() {
-        return switch (this) {
-            case Started s      -> "STARTED";
-            case Executing e    -> "EXECUTING";
-            case Completed c    -> "COMPLETED";
-            case Compensating c -> "COMPENSATING";
-            case Compensated c  -> "COMPENSATED";
-            case Failed f       -> "FAILED";
-        };
+        if (this instanceof Started)     return "STARTED";
+        if (this instanceof Executing)   return "EXECUTING";
+        if (this instanceof Completed)   return "COMPLETED";
+        if (this instanceof Compensating) return "COMPENSATING";
+        if (this instanceof Compensated) return "COMPENSATED";
+        if (this instanceof Failed)      return "FAILED";
+        throw new IllegalStateException("Unknown SagaStatus: " + getClass().getSimpleName());
     }
 
     /**

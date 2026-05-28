@@ -54,15 +54,9 @@ public sealed interface StepStatus
     enum StatusIndicator { GREEN, YELLOW, RED }
 
     default StatusIndicator indicator() {
-        return switch (this) {
-            case Completed c    -> StatusIndicator.GREEN;
-            case Failed f       -> StatusIndicator.RED;
-            case Pending p      -> StatusIndicator.YELLOW;
-            case Executing e    -> StatusIndicator.YELLOW;
-            case Compensating c -> StatusIndicator.YELLOW;
-            case Compensated c  -> StatusIndicator.YELLOW;
-            case Skipped s      -> StatusIndicator.YELLOW;
-        };
+        if (this instanceof Completed) return StatusIndicator.GREEN;
+        if (this instanceof Failed)    return StatusIndicator.RED;
+        return StatusIndicator.YELLOW;
     }
 
     // -- State queries ----------------------------------------------------
@@ -89,15 +83,14 @@ public sealed interface StepStatus
     }
 
     default String persistenceName() {
-        return switch (this) {
-            case Pending p      -> "PENDING";
-            case Executing e    -> "EXECUTING";
-            case Completed c    -> "COMPLETED";
-            case Failed f       -> "FAILED";
-            case Compensating c -> "COMPENSATING";
-            case Compensated c  -> "COMPENSATED";
-            case Skipped s      -> "SKIPPED";
-        };
+        if (this instanceof Pending)     return "PENDING";
+        if (this instanceof Executing)   return "EXECUTING";
+        if (this instanceof Completed)   return "COMPLETED";
+        if (this instanceof Failed)      return "FAILED";
+        if (this instanceof Compensating) return "COMPENSATING";
+        if (this instanceof Compensated) return "COMPENSATED";
+        if (this instanceof Skipped)     return "SKIPPED";
+        throw new IllegalStateException("Unknown StepStatus: " + getClass().getSimpleName());
     }
 
     static StepStatus fromPersistenceName(String name) {
