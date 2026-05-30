@@ -79,7 +79,7 @@ Step types are inferred from what you declare:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 <!-- Required for automatic schema creation -->
 <dependency>
@@ -90,29 +90,68 @@ Step types are inferred from what you declare:
 <!-- Add flyway-database-postgresql if using PostgreSQL -->
 ```
 
-**2. Write your saga** (the class above is all you need)
+**2. Write your saga**
 
-**3. Configure the token**
+For most microservice sagas (calling external services, not local DB entities), implement `SagaSampler` and add `@AutoStart`. The sample context fires automatically on startup — no extra code needed.
 
-```bash
-# .env — never commit this file
-SAGAWEAW_TOKEN=$(openssl rand -hex 32)
+```java
+@Saga("order-processing")
+@AutoStart                             // fires sampleContext() on startup
+@Component
+public class OrderSaga
+        implements SagaDefinition<OrderSaga.Context>,
+                   SagaSampler<OrderSaga.Context> {
+
+    private final InventoryService inventoryService;
+    private final PaymentService   paymentService;
+    private final ShippingService  shippingService;
+
+    @Override
+    public Context sampleContext() {
+        return new Context(UUID.randomUUID(), "customer-42",
+                           "item-99", 2, new BigDecimal("99.90"));
+    }
+
+    @Override
+    public SagaFlow<Context> define(SagaBuilder<Context> saga) {
+        return saga
+            .step("reserve-inventory")
+                .invoke(ctx -> inventoryService.reserve(ctx.itemId(), ctx.quantity()))
+                .compensate(ctx -> inventoryService.release(ctx.itemId(), ctx.quantity()))
+            .step("charge-payment")
+                .invoke(ctx -> paymentService.charge(ctx.customerId(), ctx.amount()))
+                .compensate(ctx -> paymentService.refund(ctx.chargeId()))
+                .retryPolicy(RetryPolicy.exponential(3, Duration.ofSeconds(5)))
+            .step("create-shipment")
+                .invoke(ctx -> shippingService.schedule(ctx.orderId(), ctx.itemId()))
+                .compensate(ctx -> shippingService.cancel(ctx.orderId()))
+            .build();
+    }
+}
 ```
+
+**3. Configure**
 
 ```properties
 # application.properties
 sagaweaw.observability.token=${SAGAWEAW_TOKEN}
-# Kafka is optional — remove this line only if you add spring-kafka to your classpath
 sagaweaw.kafka.enabled=false
+
+# Dev only — never set this in production
+sagaweaw.auto-start.enabled=true
 ```
 
-**4. Start it**
+**4. Start the application and open the dashboard**
 
-```java
-sagaManager.start(OrderSaga.class, new OrderContext(orderId, customerId, itemId, quantity, amount));
+```
+http://localhost:8484
 ```
 
-That's it. Sagaweaw creates the schema, registers your saga, and handles the rest.
+The saga fires automatically with the sample context. You see every step execute in real time, with full context, retry, and compensation trail. No curl. No extra controller.
+
+> **Production wiring:** inject `SagaManager` where the business event happens and call `sagaManager.start(OrderSaga.class, context)`. That's the only production change you need.
+
+Sagaweaw creates the schema, registers your saga, and handles everything else.
 
 ---
 
@@ -124,7 +163,7 @@ Using Kotlin? Add the `sagaweaw-kotlin` module for idiomatic DSL support — no 
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 ```
 
@@ -293,17 +332,23 @@ You already have PostgreSQL. You already know Spring Boot. Sagaweaw speaks your 
 🤖 **Using Cursor, Copilot, Claude, or ChatGPT?** Paste this prompt and replace `[YOUR CONTEXT]`:
 
 ```
-You are helping me implement Sagaweaw in my Spring Boot project.
+You will help me implement Sagaweaw in my Spring Boot project.
+
 Sagaweaw orchestrates distributed transactions with automatic compensation.
 Steps with .compensate() are COMPENSABLE, steps without are PIVOT (point of
 no return), steps with infinite retry and no compensate are RETRIABLE.
-The engine handles persistence, retry with exponential backoff, and
-compensation in reverse order. SagaContext is immutable. Never use
-@Transactional on the saga class — the engine manages transactions internally.
+The engine handles persistence, retry, and reverse-order compensation.
+Never use @Transactional on the saga — the engine manages transactions.
+
+For local testing without extra code: implement SagaSampler<Context> and add
+@AutoStart — the saga fires on startup with sampleContext(). Set
+sagaweaw.auto-start.enabled=true in application.properties (dev only).
+For production: inject SagaManager and call sagaManager.start(MySaga.class, ctx).
 
 My project: [YOUR CONTEXT — describe the business flow and services involved]
 
-Generate the complete Saga class and show me how to trigger it.
+Generate the complete Saga class (with sampleContext() if it fits Case 1),
+and show me the production wiring.
 ```
 
 ---
