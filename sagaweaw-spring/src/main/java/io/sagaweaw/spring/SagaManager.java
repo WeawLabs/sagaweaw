@@ -46,4 +46,18 @@ public class SagaManager {
         SagaFlow<C> flow = registry.getFlow(sagaClass);
         return engine.start(flow, context, idempotencyKey);
     }
+
+    /**
+     * Triggers a saga by name with a pre-deserialized context.
+     * Used by the built-in trigger endpoint — callers obtain the context class
+     * from SagaRegistry.getContextClass(sagaName) and deserialize before calling this.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public SagaExecution startByName(String sagaName, SagaContext context) {
+        SagaFlow flow = registry.findByName(sagaName)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "No saga registered with name '" + sagaName + "'. "
+                        + "Check that the saga is annotated with @Saga and @Component."));
+        return engine.start(flow, context);
+    }
 }

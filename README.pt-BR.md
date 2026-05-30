@@ -79,7 +79,7 @@ Os tipos de step são inferidos pelo que você declara:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 <!-- Obrigatório para criação automática do schema -->
 <dependency>
@@ -90,29 +90,68 @@ Os tipos de step são inferidos pelo que você declara:
 <!-- Adicione flyway-database-postgresql se usar PostgreSQL -->
 ```
 
-**2. Escreva sua saga** (a classe acima já é tudo que você precisa)
+**2. Escreva sua saga**
 
-**3. Configure o token**
+Na maioria dos microsserviços (sagas que chamam serviços externos), implemente `SagaSampler` e adicione `@AutoStart`. O contexto de exemplo dispara automaticamente no startup — nenhum código extra necessário.
 
-```bash
-# .env — nunca commite esse arquivo
-SAGAWEAW_TOKEN=$(openssl rand -hex 32)
+```java
+@Saga("order-processing")
+@AutoStart                             // dispara sampleContext() no startup
+@Component
+public class OrderSaga
+        implements SagaDefinition<OrderSaga.Context>,
+                   SagaSampler<OrderSaga.Context> {
+
+    private final InventoryService inventoryService;
+    private final PaymentService   paymentService;
+    private final ShippingService  shippingService;
+
+    @Override
+    public Context sampleContext() {
+        return new Context(UUID.randomUUID(), "customer-42",
+                           "item-99", 2, new BigDecimal("99.90"));
+    }
+
+    @Override
+    public SagaFlow<Context> define(SagaBuilder<Context> saga) {
+        return saga
+            .step("reserve-inventory")
+                .invoke(ctx -> inventoryService.reserve(ctx.itemId(), ctx.quantity()))
+                .compensate(ctx -> inventoryService.release(ctx.itemId(), ctx.quantity()))
+            .step("charge-payment")
+                .invoke(ctx -> paymentService.charge(ctx.customerId(), ctx.amount()))
+                .compensate(ctx -> paymentService.refund(ctx.chargeId()))
+                .retryPolicy(RetryPolicy.exponential(3, Duration.ofSeconds(5)))
+            .step("create-shipment")
+                .invoke(ctx -> shippingService.schedule(ctx.orderId(), ctx.itemId()))
+                .compensate(ctx -> shippingService.cancel(ctx.orderId()))
+            .build();
+    }
+}
 ```
+
+**3. Configure**
 
 ```properties
 # application.properties
 sagaweaw.observability.token=${SAGAWEAW_TOKEN}
-# Kafka é opcional — remova essa linha apenas se adicionar spring-kafka ao classpath
 sagaweaw.kafka.enabled=false
+
+# Somente em dev — nunca configure isso em produção
+sagaweaw.auto-start.enabled=true
 ```
 
-**4. Dispare a saga**
+**4. Suba a aplicação e abra o dashboard**
 
-```java
-sagaManager.start(OrderSaga.class, new OrderContext(orderId, customerId, itemId, quantity, amount));
+```
+http://localhost:8484
 ```
 
-É isso. O Sagaweaw cria o schema, registra sua saga e cuida do resto.
+A saga dispara automaticamente com o contexto de exemplo. Você vê cada step executar em tempo real, com contexto completo, retries e trilha de compensação. Sem curl. Sem controller extra.
+
+> **Wiring de produção:** injete `SagaManager` onde o evento de negócio acontece e chame `sagaManager.start(OrderSaga.class, context)`. É a única mudança necessária para produção.
+
+O Sagaweaw cria o schema, registra sua saga e cuida de tudo.
 
 ---
 
@@ -124,7 +163,7 @@ Usando Kotlin? Adicione o módulo `sagaweaw-kotlin` para DSL idiomática — sem
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.7</version>
+    <version>1.0.8</version>
 </dependency>
 ```
 

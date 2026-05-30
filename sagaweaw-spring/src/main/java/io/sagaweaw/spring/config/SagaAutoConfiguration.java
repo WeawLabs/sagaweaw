@@ -12,8 +12,10 @@ import io.sagaweaw.spring.api.DeadLetterController;
 import io.sagaweaw.spring.api.GrafanaDashboardController;
 import io.sagaweaw.spring.api.ObservabilityTokenInterceptor;
 import io.sagaweaw.spring.api.SagaObservabilityController;
+import io.sagaweaw.spring.api.SagaTriggerController;
 import io.sagaweaw.spring.api.SagaWebSocketHandler;
 import io.sagaweaw.spring.engine.CompensationExecutor;
+import io.sagaweaw.spring.engine.SagaAutoStartRunner;
 import io.sagaweaw.spring.engine.SagaRegistry;
 import io.sagaweaw.spring.engine.SpringSagaEngine;
 import io.sagaweaw.spring.engine.StepExecutor;
@@ -138,6 +140,14 @@ public class SagaAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.auto-start", name = "enabled", havingValue = "true")
+    public SagaAutoStartRunner sagaAutoStartRunner(ApplicationContext applicationContext,
+                                                    SagaManager sagaManager) {
+        return new SagaAutoStartRunner(applicationContext, sagaManager);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     @ConditionalOnBean(KafkaTemplate.class)
     @ConditionalOnProperty(prefix = "sagaweaw.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
     public OutboxRelay outboxRelay(OutboxMessageRepository outboxRepository,
@@ -196,6 +206,18 @@ public class SagaAutoConfiguration {
             SagaRegistry sagaRegistry) {
         return new SagaObservabilityController(sagaRepository, deadLetterRepository,
                 sagaEventRepository, sagaStepRepository, outboxMessageRepository, engine, mapper, properties, sagaRegistry);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnProperty(prefix = "sagaweaw.observability", name = "enabled",
+            havingValue = "true", matchIfMissing = true)
+    public SagaTriggerController sagaTriggerController(
+            SagaRegistry sagaRegistry,
+            SagaManager sagaManager,
+            ObjectMapper objectMapper,
+            ApplicationContext applicationContext) {
+        return new SagaTriggerController(sagaRegistry, sagaManager, objectMapper, applicationContext);
     }
 
     @Bean
