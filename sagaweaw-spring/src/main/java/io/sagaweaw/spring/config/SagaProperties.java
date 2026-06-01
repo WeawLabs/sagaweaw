@@ -3,6 +3,8 @@ package io.sagaweaw.spring.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
+import java.util.List;
+
 @ConfigurationProperties(prefix = "sagaweaw")
 public record SagaProperties(
         @DefaultValue("3")    int maxRetries,
@@ -30,8 +32,27 @@ public record SagaProperties(
 
     public record Observability(
             String token,
-            @DefaultValue("true") boolean enabled
+            @DefaultValue("true") boolean enabled,
+            Cors cors
     ) {}
+
+    /**
+     * sagaweaw.observability.cors.allowed-origins — comma-separated list of origins
+     * that are allowed to call the sagaweaw observability API from a browser.
+     * Only needed when the dashboard runs on a different origin than the app
+     * (e.g. standalone port 8484 or an external monitoring host).
+     *
+     * Example:
+     *   sagaweaw.observability.cors.allowed-origins=http://localhost:8484,https://staging.myapp.com
+     *
+     * The lib configures CORS only for /api/sagas/** and /api/dead-letters/** —
+     * it does not touch the rest of the application's CORS configuration.
+     */
+    public record Cors(List<String> allowedOrigins) {
+        public boolean isConfigured() {
+            return allowedOrigins != null && !allowedOrigins.isEmpty();
+        }
+    }
 
     /**
      * sagaweaw.tracing.enabled=false disables OTel span generation entirely.
