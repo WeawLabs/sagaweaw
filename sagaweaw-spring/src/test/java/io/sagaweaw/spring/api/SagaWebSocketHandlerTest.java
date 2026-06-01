@@ -33,7 +33,7 @@ class SagaWebSocketHandlerTest {
 
     @BeforeEach
     void setUp() {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
         handler = new SagaWebSocketHandler(messaging, objectMapper);
     }
 
