@@ -20,10 +20,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 @AutoConfiguration(
     beforeName = {
-        // Spring Boot 3.x
         "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
-        // Spring Boot 4.x
-        "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
         "io.sagaweaw.spring.config.SagaAutoConfiguration"
     }
 )

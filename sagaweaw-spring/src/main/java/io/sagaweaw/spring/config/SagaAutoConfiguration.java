@@ -320,7 +320,10 @@ public class SagaAutoConfiguration {
         }
 
         @Configuration
-        @ConditionalOnClass(name = "org.springframework.boot.web.reactive.function.client.WebClientCustomizer")
+        @ConditionalOnClass(name = {
+            "org.springframework.boot.web.reactive.function.client.WebClientCustomizer",
+            "org.springframework.web.reactive.function.client.ExchangeFilterFunction"
+        })
         static class WebClientCustomizerConfiguration {
             @Bean
             @ConditionalOnMissingBean(name = "sagaWebClientCustomizer")

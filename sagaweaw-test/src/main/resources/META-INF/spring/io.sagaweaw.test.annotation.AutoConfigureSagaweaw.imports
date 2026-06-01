@@ -1,8 +1,8 @@
-org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
-org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
-org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
-org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
-org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
+org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
 io.sagaweaw.spring.config.SagaJpaAutoConfiguration
 io.sagaweaw.spring.config.SagaFlywayAutoConfiguration
 io.sagaweaw.spring.config.SagaAutoConfiguration
