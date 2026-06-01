@@ -28,6 +28,8 @@ public class SagaFlywayAutoConfiguration {
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/sagaweaw/" + detectVendor(dataSource))
                 .table("sagaweaw_schema_history")
+                .baselineOnMigrate(true)
+                .baselineVersion("0")
                 .load();
     }
 
