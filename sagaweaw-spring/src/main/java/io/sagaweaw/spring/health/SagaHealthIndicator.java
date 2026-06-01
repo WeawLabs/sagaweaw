@@ -3,8 +3,8 @@ package io.sagaweaw.spring.health;
 import io.sagaweaw.spring.config.SagaProperties;
 import io.sagaweaw.spring.repository.DeadLetterRepository;
 import io.sagaweaw.spring.repository.SagaRepository;
-import org.springframework.boot.health.contributor.Health;
-import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

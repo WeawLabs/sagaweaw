@@ -1,7 +1,6 @@
 package io.sagaweaw.test.annotation;
 
-import org.springframework.boot.test.autoconfigure.TestSliceTestContextBootstrapper;
+import org.springframework.boot.test.context.SpringBootTestContextBootstrapper;
 
-public class SagaweawTestContextBootstrapper
-        extends TestSliceTestContextBootstrapper<SagaweawTest> {
+public class SagaweawTestContextBootstrapper extends SpringBootTestContextBootstrapper {
 }

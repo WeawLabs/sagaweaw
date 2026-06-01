@@ -1,6 +1,6 @@
 package io.sagaweaw.spring.api;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sagaweaw.spring.event.SagaCompensatedEvent;
 import io.sagaweaw.spring.event.SagaCompletedEvent;
 import io.sagaweaw.spring.event.SagaFailedEvent;
