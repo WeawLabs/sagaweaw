@@ -1,6 +1,6 @@
 package io.sagaweaw.spring.config;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sagaweaw.spring.alert.AlertListener;
 import io.sagaweaw.spring.alert.AlertWebhookService;
 import io.sagaweaw.spring.repository.SagaArchiveRepository;
@@ -71,11 +71,7 @@ import java.util.List;
         "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration",
         "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
         "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration",
-        // Spring Boot 4.x names (modules were split into dedicated packages)
-        "org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration",
-        "org.springframework.boot.kafka.autoconfigure.KafkaAutoConfiguration",
-        "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
-        "org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration"
+        // kept for reference only — sagaweaw targets Spring Boot 3.x
 })
 @EnableScheduling
 @EnableConfigurationProperties(SagaProperties.class)
@@ -304,38 +300,38 @@ public class SagaAutoConfiguration {
         }
 
         @Configuration
-        @ConditionalOnClass(name = "org.springframework.boot.restclient.RestTemplateCustomizer")
+        @ConditionalOnClass(name = "org.springframework.boot.web.client.RestTemplateCustomizer")
         static class RestTemplateCustomizerConfiguration {
             @Bean
             @ConditionalOnMissingBean(name = "sagaRestTemplateCustomizer")
-            public org.springframework.boot.restclient.RestTemplateCustomizer sagaRestTemplateCustomizer() {
+            public org.springframework.boot.web.client.RestTemplateCustomizer sagaRestTemplateCustomizer() {
                 return restTemplate -> restTemplate.getInterceptors().add(new SagaRestTemplateInterceptor());
             }
         }
 
         @Configuration
-        @ConditionalOnClass(name = "org.springframework.boot.restclient.RestClientCustomizer")
+        @ConditionalOnClass(name = "org.springframework.boot.web.client.RestClientCustomizer")
         static class RestClientCustomizerConfiguration {
             @Bean
             @ConditionalOnMissingBean(name = "sagaRestClientCustomizer")
-            public org.springframework.boot.restclient.RestClientCustomizer sagaRestClientCustomizer() {
+            public org.springframework.boot.web.client.RestClientCustomizer sagaRestClientCustomizer() {
                 return builder -> builder.requestInterceptor(new SagaRestTemplateInterceptor());
             }
         }
 
         @Configuration
-        @ConditionalOnClass(name = "org.springframework.boot.webclient.WebClientCustomizer")
+        @ConditionalOnClass(name = "org.springframework.boot.web.reactive.function.client.WebClientCustomizer")
         static class WebClientCustomizerConfiguration {
             @Bean
             @ConditionalOnMissingBean(name = "sagaWebClientCustomizer")
-            public org.springframework.boot.webclient.WebClientCustomizer sagaWebClientCustomizer() {
+            public org.springframework.boot.web.reactive.function.client.WebClientCustomizer sagaWebClientCustomizer() {
                 return builder -> builder.filter(new SagaWebClientFilter());
             }
         }
     }
 
     @Configuration
-    @ConditionalOnClass(name = "org.springframework.boot.health.contributor.HealthIndicator")
+    @ConditionalOnClass(name = "org.springframework.boot.actuate.health.HealthIndicator")
     static class SagaHealthConfiguration {
         @Bean("sagasHealthIndicator")
         @ConditionalOnMissingBean(name = "sagasHealthIndicator")

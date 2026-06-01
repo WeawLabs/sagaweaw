@@ -1,48 +1,49 @@
 package io.sagaweaw.spring.config;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.JacksonModule;
-import tools.jackson.databind.SerializationContext;
-import tools.jackson.databind.deser.std.StdDeserializer;
-import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.ser.std.StdSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.sagaweaw.core.SagaStatus;
 import io.sagaweaw.core.StepStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
+
 @Configuration
 public class SagaJacksonModule {
 
     @Bean
-    public JacksonModule sagaStatusModule() {
+    public Module sagaStatusModule() {
         SimpleModule module = new SimpleModule("sagaweaw-status");
 
         module.addSerializer(SagaStatus.class, new StdSerializer<>(SagaStatus.class) {
             @Override
-            public void serialize(SagaStatus v, JsonGenerator g, SerializationContext p) throws JacksonException {
+            public void serialize(SagaStatus v, JsonGenerator g, SerializerProvider p) throws IOException {
                 g.writeString(v.persistenceName());
             }
         });
         module.addDeserializer(SagaStatus.class, new StdDeserializer<>(SagaStatus.class) {
             @Override
-            public SagaStatus deserialize(JsonParser p, DeserializationContext ctx) throws JacksonException {
+            public SagaStatus deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
                 return SagaStatus.fromPersistenceName(p.getText());
             }
         });
 
         module.addSerializer(StepStatus.class, new StdSerializer<>(StepStatus.class) {
             @Override
-            public void serialize(StepStatus v, JsonGenerator g, SerializationContext p) throws JacksonException {
+            public void serialize(StepStatus v, JsonGenerator g, SerializerProvider p) throws IOException {
                 g.writeString(v.persistenceName());
             }
         });
         module.addDeserializer(StepStatus.class, new StdDeserializer<>(StepStatus.class) {
             @Override
-            public StepStatus deserialize(JsonParser p, DeserializationContext ctx) throws JacksonException {
+            public StepStatus deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
                 return StepStatus.fromPersistenceName(p.getText());
             }
         });

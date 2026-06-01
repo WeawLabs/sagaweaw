@@ -1,6 +1,6 @@
 package io.sagaweaw.spring.mapper;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sagaweaw.core.SagaInstance;
 import io.sagaweaw.core.SagaStatus;
 import io.sagaweaw.core.StepInstance;

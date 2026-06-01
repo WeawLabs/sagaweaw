@@ -1,8 +1,7 @@
 package io.sagaweaw.spring.mapper;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.DeserializationFeature;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sagaweaw.core.SagaInstance;
 import io.sagaweaw.core.SagaStatus;
 import io.sagaweaw.core.StepInstance;
@@ -23,9 +22,8 @@ public class SagaMapper {
     public SagaMapper(ObjectMapper objectMapper) {
         // Use a lenient copy: unknown fields (e.g. StepOutput.isEmpty() serialised as
         // "empty", or removed context fields in stored JSON) are silently ignored.
-        this.objectMapper = objectMapper.rebuild()
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .build();
+        this.objectMapper = objectMapper.copy()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public SagaInstance toInstance(SagaEntity entity) {
@@ -68,7 +66,7 @@ public class SagaMapper {
         if (value == null) return null;
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JacksonException e) {
+        } catch (Exception e) {
             log.error("Failed to serialize to JSON: {}", value.getClass().getSimpleName(), e);
             return "{}";
         }
@@ -78,7 +76,7 @@ public class SagaMapper {
         if (json == null || json.isBlank()) return null;
         try {
             return objectMapper.readValue(json, type);
-        } catch (JacksonException e) {
+        } catch (Exception e) {
             log.error("Failed to deserialize JSON to {}", type.getSimpleName(), e);
             return null;
         }

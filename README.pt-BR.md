@@ -79,7 +79,7 @@ Os tipos de step são inferidos pelo que você declara:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 </dependency>
 <!-- Obrigatório para criação automática do schema -->
 <dependency>
@@ -163,7 +163,7 @@ Usando Kotlin? Adicione o módulo `sagaweaw-kotlin` para DSL idiomática — sem
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 </dependency>
 ```
 
@@ -360,7 +360,8 @@ O Sagaweaw está em desenvolvimento ativo e adoraríamos sua ajuda. Seja um bug 
 ## Requisitos
 
 - Java 17 LTS+
-- Spring Boot 3.x ou 4.x
+- Spring Boot 3.2+ (recomendado) ou 4.x
+- Kotlin 2.0+ (se usar `sagaweaw-kotlin`)
 - PostgreSQL 14+ (recomendado), MySQL 8.0+ ou H2
 
 ---

@@ -1,6 +1,6 @@
 package io.sagaweaw.spring.api;
 
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sagaweaw.core.SagaContext;
 import io.sagaweaw.core.SagaExecution;
 import io.sagaweaw.core.SagaSampler;

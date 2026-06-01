@@ -9,7 +9,7 @@
     <parent>
         <groupId>dev.sagaweaw</groupId>
         <artifactId>sagaweaw-parent</artifactId>
-        <version>1.0.8</version>
+        <version>1.0.9</version>
     </parent>
 
     <artifactId>sagaweaw-spring</artifactId>
@@ -71,10 +71,10 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Health — optional; activates SagaHealthIndicator when present -->
+        <!-- Health — optional; activates SagaHealthIndicator when Actuator is present -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-health</artifactId>
+            <artifactId>spring-boot-actuator</artifactId>
             <optional>true</optional>
         </dependency>
 
@@ -95,19 +95,9 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- RestTemplate/RestClient customizers — optional; Spring Boot 4.x separate modules -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-restclient</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- WebClient customizer — optional; Spring Boot 4.x separate module -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-webclient</artifactId>
-            <optional>true</optional>
-        </dependency>
+        <!-- RestTemplate/RestClient/WebClient customizers — in Spring Boot 3.x these classes
+             are part of spring-boot-autoconfigure, which is a transitive dependency of
+             spring-boot-starter and already on the classpath. No explicit dep needed. -->
 
         <!-- WebFlux — optional; needed to compile SagaWebClientFilter -->
         <dependency>
