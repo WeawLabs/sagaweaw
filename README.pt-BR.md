@@ -79,7 +79,7 @@ Os tipos de step são inferidos pelo que você declara:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
 </dependency>
 <!-- Obrigatório para criação automática do schema -->
 <dependency>
@@ -163,7 +163,7 @@ Usando Kotlin? Adicione o módulo `sagaweaw-kotlin` para DSL idiomática — sem
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
 </dependency>
 ```
 

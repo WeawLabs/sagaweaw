@@ -54,6 +54,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -376,6 +377,30 @@ public class SagaAutoConfiguration {
         public TracingInterceptor tracingInterceptor(ObservationRegistry observationRegistry) {
             return new TracingInterceptor(observationRegistry);
         }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "sagaweawCorsConfigurer")
+    @ConditionalOnWebApplication
+    public WebMvcConfigurer sagaweawCorsConfigurer(SagaProperties properties) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                SagaProperties.Observability obs = properties.observability();
+                if (obs == null || obs.cors() == null || !obs.cors().isConfigured()) return;
+                String[] origins = obs.cors().allowedOrigins().toArray(new String[0]);
+                registry.addMapping("/api/sagas/**")
+                        .allowedOrigins(origins)
+                        .allowedMethods("GET", "POST")
+                        .allowedHeaders("Authorization", "X-Sagaweaw-Token", "Content-Type")
+                        .maxAge(3600);
+                registry.addMapping("/api/dead-letters/**")
+                        .allowedOrigins(origins)
+                        .allowedMethods("GET", "POST")
+                        .allowedHeaders("Authorization", "X-Sagaweaw-Token", "Content-Type")
+                        .maxAge(3600);
+            }
+        };
     }
 
     @Configuration
