@@ -22,8 +22,8 @@ public record SagaProperties(
 ) {
 
     public record Dashboard(
-            @DefaultValue("standalone") String mode,
-            @DefaultValue("/sagaweaw")  String path
+            @DefaultValue("embedded")  String mode,
+            @DefaultValue("/sagaweaw") String path
     ) {
         public boolean isEmbedded() {
             return "embedded".equalsIgnoreCase(mode);
@@ -40,7 +40,8 @@ public record SagaProperties(
      * sagaweaw.observability.cors.allowed-origins — comma-separated list of origins
      * that are allowed to call the sagaweaw observability API from a browser.
      * Only needed when the dashboard runs on a different origin than the app
-     * (e.g. standalone port 8484 or an external monitoring host).
+     * (e.g. standalone mode with Vite dev server on port 8484, or an external monitoring host).
+     * Not required in embedded mode (default) — the dashboard is served from the same origin.
      *
      * Example:
      *   sagaweaw.observability.cors.allowed-origins=http://localhost:8484,https://staging.myapp.com
