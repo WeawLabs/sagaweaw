@@ -249,7 +249,7 @@ public class SagaAutoConfiguration {
 
     @Configuration
     @ConditionalOnWebApplication
-    @ConditionalOnProperty(prefix = "sagaweaw.dashboard", name = "mode", havingValue = "embedded")
+    @ConditionalOnProperty(prefix = "sagaweaw.dashboard", name = "mode", havingValue = "embedded", matchIfMissing = true)
     static class SagaDashboardEmbeddedConfiguration implements WebMvcConfigurer {
 
         @org.springframework.beans.factory.annotation.Autowired

@@ -16,6 +16,43 @@
 
 ---
 
+## Production in 5 steps
+
+No extra containers. No dashboard repo to clone. One environment variable.
+
+**1. Add the dependency**
+```kotlin
+// Gradle (Kotlin DSL)
+implementation("dev.sagaweaw:sagaweaw-spring-boot-starter:1.0.11")
+```
+```xml
+<!-- Maven -->
+<dependency>
+    <groupId>dev.sagaweaw</groupId>
+    <artifactId>sagaweaw-spring-boot-starter</artifactId>
+    <version>1.0.11</version>
+</dependency>
+```
+
+**2. Write your sagas** — annotate with `@Saga`, implement `SagaDefinition` (see [Quickstart](#quickstart) below)
+
+**3. Set one environment variable**
+```bash
+SAGAWEAW_TOKEN=$(openssl rand -hex 32)
+```
+
+**4. Deploy normally** — Sagaweaw creates its own tables automatically on first boot (dedicated Flyway, separate history table, never conflicts with your migrations)
+
+**5. Open the dashboard in your browser**
+```
+https://your-api.com/sagaweaw
+```
+Enter your token → real-time saga feed, step timeline, dead letters, metrics. Zero extra infra.
+
+> **Local development?** See [Local development](#local-development) below — the Vite dev server on port 8484 proxies to your local API.
+
+---
+
 ## The problem every microservice team faces
 
 Payment charged. Inventory reserved. Then the shipping service times out.
@@ -79,7 +116,7 @@ Step types are inferred from what you declare:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
 </dependency>
 <!-- Required for automatic schema creation -->
 <dependency>
@@ -141,17 +178,48 @@ sagaweaw.kafka.enabled=false
 sagaweaw.auto-start.enabled=true
 ```
 
-**4. Start the application and open the dashboard**
+**4. Start the application**
+
+The saga fires automatically with the sample context on startup.
+
+**5. Open the dashboard**
 
 ```
+# Embedded (default) — served by your own API, no extra process
+http://localhost:8080/sagaweaw
+
+# Standalone dev — Vite proxy on port 8484 (see Local development)
 http://localhost:8484
 ```
 
-The saga fires automatically with the sample context. You see every step execute in real time, with full context, retry, and compensation trail. No curl. No extra controller.
+You see every step execute in real time, with full context, retry, and compensation trail. No curl. No extra controller.
 
-> **Production wiring:** inject `SagaManager` where the business event happens and call `sagaManager.start(OrderSaga.class, context)`. That's the only production change you need.
+> **Production wiring:** inject `SagaManager` where the business event happens and call `sagaManager.start(OrderSaga.class, context)`. Remove `@AutoStart` and `sagaweaw.auto-start.enabled`. That's the only production change you need.
 
 Sagaweaw creates the schema, registers your saga, and handles everything else.
+
+---
+
+## Local development
+
+For local development with the Vite dev server (hot reload, faster iteration):
+
+```bash
+cd sagaweaw-dashboard
+npm install
+npm run dev          # starts on http://localhost:8484, proxies /api → localhost:8080
+```
+
+Add CORS config so the browser can reach your local API from a different origin:
+
+```properties
+sagaweaw.observability.cors.allowed-origins=http://localhost:8484
+```
+
+To use `standalone` mode explicitly (optional — `embedded` is the default):
+```properties
+sagaweaw.dashboard.mode=standalone
+```
 
 ---
 
@@ -163,7 +231,7 @@ Using Kotlin? Add the `sagaweaw-kotlin` module for idiomatic DSL support — no 
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
 </dependency>
 ```
 
