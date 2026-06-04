@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import logo from '../assets/logo.svg'
 import { useTheme } from '../hooks/useTheme'
-import { getToken } from '../auth'
+import { getToken, clearToken } from '../auth'
 import CopyButton from './CopyButton'
 
 const LANGS = [
@@ -47,22 +47,45 @@ function GearIcon() {
   )
 }
 
-function BookIcon() {
+function BarChartIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4"  />
+      <line x1="6"  y1="20" x2="6"  y2="14" />
     </svg>
   )
 }
 
-function maskToken(token: string | null): string {
-  if (!token) return '—'
-  if (token.length <= 6) return '••••••••'
-  return token.slice(0, 4) + '••••••••'
+function MessageIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  )
 }
 
-export default function Header() {
+function ExternalLinkIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  )
+}
+
+function LogOutIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  )
+}
+
+export default function Header({ onLogout }: { onLogout?: () => void }) {
   const { t, i18n } = useTranslation()
   const { theme, toggle } = useTheme()
 
@@ -81,6 +104,11 @@ export default function Header() {
   }, [showGear])
 
   const token = getToken()
+
+  function logout() {
+    clearToken()
+    onLogout?.()
+  }
 
   async function downloadGrafanaDashboard() {
     const res = await fetch('/api/grafana-dashboard', {
@@ -134,19 +162,6 @@ export default function Header() {
             {t('header.live')}
           </div>
 
-          {/* docs link */}
-          <a
-            href={DOCS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={t('header.docs')}
-            className="w-8 h-8 rounded-lg flex items-center justify-center
-                       text-gray-500 hover:text-ink hover:bg-muted
-                       border border-border transition-all duration-200"
-          >
-            <BookIcon />
-          </a>
-
           {/* gear / settings dropdown */}
           <div ref={gearRef} className="relative">
             <button
@@ -171,22 +186,6 @@ export default function Header() {
                   {t('header.settings')}
                 </span>
 
-                {/* token */}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">Token</span>
-                  <code className="text-[12px] font-mono text-ink bg-muted rounded px-2 py-1 border border-border">
-                    {maskToken(token)}
-                  </code>
-                </div>
-
-                {/* API endpoint */}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">API endpoint</span>
-                  <code className="text-[12px] font-mono text-ink bg-muted rounded px-2 py-1 border border-border">
-                    /api/sagas
-                  </code>
-                </div>
-
                 {/* MDC fields */}
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">MDC fields</span>
@@ -203,15 +202,6 @@ export default function Header() {
                   </div>
                 </div>
 
-                {/* Micrometer */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">Micrometer</span>
-                  <div className="flex items-center gap-1.5 text-[12px] text-ok font-medium">
-                    <span className="w-[6px] h-[6px] rounded-full bg-ok inline-block" />
-                    active
-                  </div>
-                </div>
-
                 {/* Prometheus */}
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[10px] text-gray-400 uppercase tracking-wide font-medium">Prometheus</span>
@@ -224,37 +214,53 @@ export default function Header() {
                 </div>
 
                 {/* links */}
-                <div className="flex flex-col gap-1 border-t border-border pt-2">
+                <div className="flex flex-col border-t border-border pt-2">
                   <button
                     onClick={downloadGrafanaDashboard}
-                    className="flex items-center gap-2 text-[12px] text-gray-600 hover:text-ink transition-colors text-left"
+                    className="flex items-center gap-2.5 px-2 py-[7px] rounded-lg text-[12px]
+                               text-gray-500 hover:text-ink hover:bg-muted
+                               transition-all duration-150 text-left"
                   >
-                    <span>📊</span>
-                    <span>Grafana Dashboard (JSON)</span>
+                    <span className="text-gray-400"><BarChartIcon /></span>
+                    Grafana Dashboard (JSON)
                   </button>
                   <a
                     href={DISCUSSIONS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[12px] text-gray-600 hover:text-ink transition-colors"
+                    className="flex items-center gap-2.5 px-2 py-[7px] rounded-lg text-[12px]
+                               text-gray-500 hover:text-ink hover:bg-muted
+                               transition-all duration-150"
                   >
-                    <span>💬</span>
-                    <span>GitHub Discussions — ajuda</span>
+                    <span className="text-gray-400"><MessageIcon /></span>
+                    GitHub Discussions
                   </a>
                   <a
                     href={DOCS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[12px] text-gray-600 hover:text-ink transition-colors"
+                    className="flex items-center gap-2.5 px-2 py-[7px] rounded-lg text-[12px]
+                               text-gray-500 hover:text-ink hover:bg-muted
+                               transition-all duration-150"
                   >
-                    <span>📖</span>
-                    <span>Documentação</span>
+                    <span className="text-gray-400"><ExternalLinkIcon /></span>
+                    Documentação
                   </a>
                 </div>
 
                 <div className="border-t border-border pt-2 flex items-center justify-between">
-                  <span className="text-[10px] text-gray-400 font-mono">sagaweaw</span>
-                  <span className="text-[10px] text-gray-400 font-mono">v1.0.2</span>
+                  <span className="text-[10px] text-gray-400 font-mono">
+                    sagaweaw v{import.meta.env.VITE_APP_VERSION}
+                  </span>
+                  <button
+                    onClick={logout}
+                    className="flex items-center gap-1.5 px-2 py-[5px] rounded-lg text-[11px]
+                               text-gray-400 hover:text-fail hover:bg-fail/10
+                               transition-all duration-150 font-medium"
+                  >
+                    <LogOutIcon />
+                    Sair
+                  </button>
                 </div>
 
               </div>

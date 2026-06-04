@@ -51,6 +51,13 @@ echo "  → docs/ (todos os .md e .mdx)"
 find "$DOC_ROOT/docs" -name "*.md" -o -name "*.mdx" | \
   xargs sed -i "s/$CURRENT_VERSION/$NEW_VERSION/g"
 
+# 5. Atualiza dashboard package.json
+if [ -f "$ROOT/sagaweaw-dashboard/package.json" ]; then
+  echo "  → sagaweaw-dashboard/package.json"
+  sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$NEW_VERSION\"/" \
+    "$ROOT/sagaweaw-dashboard/package.json"
+fi
+
 echo ""
 echo "✅ Versão atualizada para $NEW_VERSION em todos os lugares."
 echo ""

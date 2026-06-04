@@ -1,12 +1,12 @@
 {
   "name": "sagaweaw-dashboard",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.12",
   "type": "module",
   "scripts": {
     "dev": "vite --port 8484",
     "build": "tsc && vite build",
-    "build:embedded": "VITE_DASHBOARD_BASE=/sagaweaw/ tsc && vite build",
+    "build:embedded": "tsc && VITE_DASHBOARD_BASE=/sagaweaw/ vite build",
     "preview": "vite preview --port 8484"
   },
   "dependencies": {
