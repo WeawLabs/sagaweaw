@@ -31,10 +31,16 @@ public class DeadLetterController {
 
     @GetMapping
     public List<DeadLetterResponse> list(
-            @RequestParam(defaultValue = "false") boolean includeReprocessed) {
-        var entities = includeReprocessed
-                ? deadLetterRepository.findAll()
-                : deadLetterRepository.findByReprocessedFalseOrderByCreatedAtAsc();
+            @RequestParam(defaultValue = "false") boolean includeReprocessed,
+            @RequestParam(required = false) String sagaId) {
+        List<io.sagaweaw.spring.entity.DeadLetterEntity> entities;
+        if (sagaId != null && !sagaId.isBlank()) {
+            entities = deadLetterRepository.findBySagaIdOrderByCreatedAtAsc(sagaId);
+        } else {
+            entities = includeReprocessed
+                    ? deadLetterRepository.findAll()
+                    : deadLetterRepository.findByReprocessedFalseOrderByCreatedAtAsc();
+        }
         Map<String, String> nameMap = loadSagaNames(entities.stream().map(e -> e.getSagaId()).toList());
         return entities.stream()
                 .map(e -> DeadLetterResponse.from(e, nameMap.get(e.getSagaId())))
