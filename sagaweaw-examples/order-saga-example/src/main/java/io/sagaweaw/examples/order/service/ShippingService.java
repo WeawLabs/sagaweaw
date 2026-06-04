@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 public class ShippingService {
 
     public void schedule(String orderId, String itemId) {
+        if (itemId.startsWith("FAIL-SHIP-") || itemId.startsWith("FAIL-COMP-")) {
+            throw new RuntimeException("Shipping provider unavailable for item: " + itemId);
+        }
         log.info("Scheduling shipment for order {} item {}", orderId, itemId);
     }
 

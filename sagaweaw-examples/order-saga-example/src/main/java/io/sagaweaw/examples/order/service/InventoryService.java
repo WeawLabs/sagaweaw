@@ -12,6 +12,9 @@ public class InventoryService {
     }
 
     public void release(String itemId, int quantity) {
+        if (itemId.startsWith("FAIL-COMP-")) {
+            throw new RuntimeException("Inventory system offline, cannot release: " + itemId);
+        }
         log.info("Releasing {} units of item {}", quantity, itemId);
     }
 }
