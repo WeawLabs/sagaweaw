@@ -11,6 +11,9 @@ import java.util.UUID;
 public class PaymentService {
 
     public String charge(String customerId, BigDecimal amount) {
+        if (customerId.startsWith("FAIL-PAY-")) {
+            throw new RuntimeException("Payment gateway rejected customer: " + customerId);
+        }
         String chargeId = UUID.randomUUID().toString();
         log.info("Charging {} to customer {} — chargeId: {}", amount, customerId, chargeId);
         return chargeId;
