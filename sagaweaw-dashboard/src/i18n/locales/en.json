@@ -1,6 +1,6 @@
 {
   "header": {
-    "feed": "Feed",
+    "feed": "Sagas",
     "metrics": "Metrics",
     "deadLetters": "Dead Letters",
     "live": "live",
@@ -25,7 +25,9 @@
     "compensated":  "Compensated",
     "deadLetters":  "Dead Letters",
     "rate":         "Success rate",
-    "bySaga":       "By saga type"
+    "bySaga":              "By saga type",
+    "bySagaEmpty":         "No saga types yet",
+    "bySagaEmptySubtitle": "Types appear as sagas are executed"
   },
   "feed": {
     "allStatuses":       "All statuses",
@@ -41,7 +43,10 @@
     "counter":           "{{count}} sagas · refreshes every 3s",
     "loading":           "Loading…",
     "loadError":         "Failed to load",
-    "empty":             "No sagas found",
+    "empty":                   "No sagas yet",
+    "emptySubtitle":           "Saga executions will appear here in real time",
+    "emptyFiltered":           "No sagas match this filter",
+    "emptyFilteredSubtitle":   "Try adjusting the status or search term",
     "inProgress":        "running",
     "steps":             "{{done}}/{{total}} steps",
     "agoSeconds":        "{{n}}s ago",
@@ -81,7 +86,12 @@
     "nextRetry":         "Next retry: {{time}}",
     "related":           "Related sagas",
     "tabFlow":           "Flow",
-    "flowNoData":        "Flow diagram not available for this saga type.",
+    "flowNoData":           "Flow diagram not available",
+    "flowNoDataSubtitle":   "Make sure the saga definition is registered on the classpath",
+    "relatedEmpty":         "No related sagas",
+    "relatedEmptySubtitle": "Sagas sharing the same business key will appear here",
+    "deadLettersSection":   "{{count}} dead letter(s)",
+    "reprocessed":          "reprocessed",
     "flowCompensable":   "Compensable (has rollback)",
     "flowPivot":         "Pivot (point of no return)",
     "flowRetriable":     "Retriable (infinite retry)"
@@ -92,7 +102,8 @@
     "outboxHealthy":   "Healthy",
     "outboxPending":   "{{n}} pending",
     "retryQueue":      "Retry Queue",
-    "retryQueueEmpty": "No steps awaiting retry",
+    "retryQueueEmpty":        "No steps awaiting retry",
+    "retryQueueEmptySubtitle": "All steps are running cleanly",
     "attempt":         "attempt {{current}}/{{max}}",
     "retrySoon":       "any moment",
     "retryIn":         "in {{time}}",
@@ -103,11 +114,15 @@
     "avg":                "avg",
     "stepTimes":          "Step times",
     "integrationsNote":   "MDC, Prometheus and Micrometer configured automatically.",
-    "noStepStats":        "No data yet"
+    "noStepStats":           "No data yet",
+    "noStepStatsSubtitle":   "Step durations appear after execution",
+    "bySagaEmpty":           "No saga types yet",
+    "bySagaEmptySubtitle":   "Types appear as sagas execute"
   },
   "dl": {
     "title":           "Dead Letter Queue",
     "empty":           "No pending dead letters",
+    "emptySubtitle":   "All messages have been processed successfully",
     "loadError":       "Failed to load dead letters",
     "reprocessError":  "Failed to reprocess",
     "reprocess":       "Reprocess",

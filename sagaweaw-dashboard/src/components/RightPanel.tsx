@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { SagaNameStats, StepStats } from '../api/types'
 import { fmtDuration } from '../utils/fmt'
+import EmptyState from './EmptyState'
 
 const MIN_W = 180
 const MAX_W = 380
@@ -173,7 +174,7 @@ export default function RightPanel({ byName, activeName, onNameFilter }: Props) 
         {/* saga type rows — scrollable */}
         <div className="scrollbar-subtle flex-1 min-h-0 overflow-y-auto flex flex-col gap-1">
           {byName.length === 0 ? (
-            <span className="text-[12px] text-gray-400">—</span>
+            <EmptyState compact icon="stats" title={t('rightPanel.bySagaEmpty')} subtitle={t('rightPanel.bySagaEmptySubtitle')} />
           ) : (
             byName.map(row => {
               const rowRate = row.total > 0 ? (row.completed / row.total) * 100 : 0
@@ -253,7 +254,7 @@ export default function RightPanel({ byName, activeName, onNameFilter }: Props) 
             )}
           </div>
           {stepsWithPct.length === 0 ? (
-            <span className="text-[12px] text-gray-500">{t('rightPanel.noStepStats')}</span>
+            <EmptyState compact icon="stats" title={t('rightPanel.noStepStats')} subtitle={t('rightPanel.noStepStatsSubtitle')} />
           ) : (
             <div className="scrollbar-subtle overflow-y-auto flex flex-col gap-2 pr-0.5" style={{ height: stepTimesH }}>
               {stepsWithPct.map(s => (
