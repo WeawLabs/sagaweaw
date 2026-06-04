@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { SagaMetrics } from '../api/types'
+import EmptyState from '../components/EmptyState'
 
 export default function SagaMetrics() {
   const { t } = useTranslation()
@@ -75,44 +76,52 @@ export default function SagaMetrics() {
       </div>
 
       {/* breakdown by saga name */}
-      {metrics.byName.length > 0 && (
-        <div className="bg-surface border border-border rounded-xl p-5 shadow-sm">
-          <h2 className="text-[13px] font-medium text-ink mb-4">{t('metrics.bySaga')}</h2>
-          <div className="space-y-4">
-            {metrics.byName.map(row => {
-              const rowRate = row.total > 0 ? (row.completed / row.total) * 100 : 0
-              const rowFail = row.total > 0 ? (row.failed   / row.total) * 100 : 0
-              return (
-                <div key={row.name}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[13px] text-ink font-mono">{row.name}</span>
-                    <span className="text-[12px] text-gray-600">
-                      {row.completed}/{row.total} &nbsp;·&nbsp;
-                      <span className={rowRate >= 80 ? 'text-ok' : rowRate >= 50 ? 'text-warn' : 'text-fail'}>
-                        {rowRate.toFixed(0)}%
+      <div className="bg-surface border border-border rounded-xl p-5 shadow-sm">
+        <h2 className="text-[13px] font-medium text-ink mb-4">{t('metrics.bySaga')}</h2>
+        {metrics.byName.length === 0 ? (
+          <EmptyState
+            icon="stats"
+            title={t('metrics.bySagaEmpty')}
+            subtitle={t('metrics.bySagaEmptySubtitle')}
+          />
+        ) : (
+          <>
+            <div className="space-y-4">
+              {metrics.byName.map(row => {
+                const rowRate = row.total > 0 ? (row.completed / row.total) * 100 : 0
+                const rowFail = row.total > 0 ? (row.failed   / row.total) * 100 : 0
+                return (
+                  <div key={row.name}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[13px] text-ink font-mono">{row.name}</span>
+                      <span className="text-[12px] text-gray-600">
+                        {row.completed}/{row.total} &nbsp;·&nbsp;
+                        <span className={rowRate >= 80 ? 'text-ok' : rowRate >= 50 ? 'text-warn' : 'text-fail'}>
+                          {rowRate.toFixed(0)}%
+                        </span>
                       </span>
-                    </span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden flex">
+                      <div
+                        className="h-full bg-ok transition-all duration-700"
+                        style={{ width: `${rowRate}%` }}
+                      />
+                      <div
+                        className="h-full bg-fail transition-all duration-700"
+                        style={{ width: `${rowFail}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden flex">
-                    <div
-                      className="h-full bg-ok transition-all duration-700"
-                      style={{ width: `${rowRate}%` }}
-                    />
-                    <div
-                      className="h-full bg-fail transition-all duration-700"
-                      style={{ width: `${rowFail}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <div className="flex gap-4 mt-4 text-[11px] text-gray-600">
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-ok inline-block" />{t('metrics.completed')}</span>
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-fail inline-block" />{t('metrics.failed')}</span>
-          </div>
-        </div>
-      )}
+                )
+              })}
+            </div>
+            <div className="flex gap-4 mt-4 text-[11px] text-gray-600">
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-ok inline-block" />{t('metrics.completed')}</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-fail inline-block" />{t('metrics.failed')}</span>
+            </div>
+          </>
+        )}
+      </div>
 
     </div>
   )

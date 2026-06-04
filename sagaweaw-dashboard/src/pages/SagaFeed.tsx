@@ -9,6 +9,7 @@ import SidePanel from '../components/SidePanel'
 import RightPanel from '../components/RightPanel'
 import { useStomp } from '../hooks/useStomp'
 import { fmtDuration } from '../utils/fmt'
+import EmptyState from '../components/EmptyState'
 
 const PAGE_SIZE = 20
 
@@ -92,6 +93,7 @@ export default function SagaFeed() {
 
   const pagedSagas = sagas.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
   const hasMore    = sagas.length > (page + 1) * PAGE_SIZE
+  const isFiltered = status !== '' || name !== ''
 
   return (
     <div className="h-full flex flex-col">
@@ -155,9 +157,12 @@ export default function SagaFeed() {
             )}
 
             {!loading && pagedSagas.length === 0 && (
-              <div className="bg-surface rounded-[10px] border border-border px-4 py-8
-                              text-center text-[13px] text-gray-400">
-                {t('feed.empty')}
+              <div className="bg-surface rounded-[10px] border border-border flex-shrink-0">
+                <EmptyState
+                  icon="sagas"
+                  title={isFiltered ? t('feed.emptyFiltered') : t('feed.empty')}
+                  subtitle={isFiltered ? t('feed.emptyFilteredSubtitle') : t('feed.emptySubtitle')}
+                />
               </div>
             )}
 
@@ -201,8 +206,11 @@ export default function SagaFeed() {
             <button
               onClick={() => api.sagas.exportCsv({ status: status || undefined })}
               disabled={sagas.length === 0}
-              className="text-[12px] text-gray-400 hover:text-ink transition-colors px-2 disabled:opacity-30"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px]
+                         text-gray-400 hover:text-ink hover:bg-muted border border-transparent
+                         hover:border-border transition-all duration-150 disabled:opacity-30"
             >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               {t('feed.exportCsv')}
             </button>
           </div>

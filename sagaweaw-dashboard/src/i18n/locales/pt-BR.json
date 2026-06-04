@@ -1,6 +1,6 @@
 {
   "header": {
-    "feed": "Feed",
+    "feed": "Sagas",
     "metrics": "Métricas",
     "deadLetters": "Dead Letters",
     "live": "ao vivo",
@@ -25,7 +25,9 @@
     "compensated":  "Compensadas",
     "deadLetters":  "Dead Letters",
     "rate":         "Taxa de sucesso",
-    "bySaga":       "Por tipo de saga"
+    "bySaga":              "Por tipo de saga",
+    "bySagaEmpty":         "Nenhum tipo de saga ainda",
+    "bySagaEmptySubtitle": "Os tipos aparecem conforme as sagas são executadas"
   },
   "feed": {
     "allStatuses":       "Todos os status",
@@ -41,7 +43,10 @@
     "counter":           "{{count}} sagas · atualiza a cada 3s",
     "loading":           "Carregando…",
     "loadError":         "Falha ao carregar",
-    "empty":             "Nenhuma saga encontrada",
+    "empty":                   "Nenhuma saga ainda",
+    "emptySubtitle":           "Execuções de saga aparecem aqui em tempo real",
+    "emptyFiltered":           "Nenhuma saga corresponde a este filtro",
+    "emptyFilteredSubtitle":   "Tente ajustar o status ou o termo de busca",
     "inProgress":        "em andamento",
     "steps":             "{{done}}/{{total}} steps",
     "agoSeconds":        "{{n}}s atrás",
@@ -81,7 +86,12 @@
     "nextRetry":         "Próxima tentativa: {{time}}",
     "related":           "Sagas relacionadas",
     "tabFlow":           "Fluxo",
-    "flowNoData":        "Diagrama de fluxo indisponível para este tipo de saga.",
+    "flowNoData":           "Diagrama de fluxo indisponível",
+    "flowNoDataSubtitle":   "Verifique se a definição da saga está registrada no classpath",
+    "relatedEmpty":         "Nenhuma saga relacionada",
+    "relatedEmptySubtitle": "Sagas com a mesma business key aparecem aqui",
+    "deadLettersSection":   "{{count}} dead letter(s)",
+    "reprocessed":          "reprocessado",
     "flowCompensable":   "Compensável (tem rollback)",
     "flowPivot":         "Pivot (ponto sem retorno)",
     "flowRetriable":     "Retriable (retry infinito)"
@@ -92,7 +102,8 @@
     "outboxHealthy":   "Saudável",
     "outboxPending":   "{{n}} pendente(s)",
     "retryQueue":      "Retry Queue",
-    "retryQueueEmpty": "Nenhum step aguardando retry",
+    "retryQueueEmpty":         "Nenhum step aguardando retry",
+    "retryQueueEmptySubtitle": "Todos os steps estão executando normalmente",
     "attempt":         "{{current}}/{{max}} tentativas",
     "retrySoon":       "qualquer momento",
     "retryIn":         "em {{time}}",
@@ -103,11 +114,15 @@
     "avg":                "avg",
     "stepTimes":          "Tempo dos steps",
     "integrationsNote":   "MDC, Prometheus e Micrometer configurados automaticamente.",
-    "noStepStats":        "Sem dados ainda"
+    "noStepStats":           "Sem dados ainda",
+    "noStepStatsSubtitle":   "Durações dos steps aparecem após execução",
+    "bySagaEmpty":           "Nenhum tipo de saga ainda",
+    "bySagaEmptySubtitle":   "Os tipos aparecem conforme as sagas executam"
   },
   "dl": {
     "title":           "Dead Letter Queue",
     "empty":           "Nenhum dead letter pendente",
+    "emptySubtitle":   "Todas as mensagens foram processadas com sucesso",
     "loadError":       "Falha ao carregar dead letters",
     "reprocessError":  "Falha ao reprocessar",
     "reprocess":       "Reprocessar",

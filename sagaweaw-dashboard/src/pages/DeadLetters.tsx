@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { DeadLetter } from '../api/types'
 import CopyButton from '../components/CopyButton'
+import EmptyState from '../components/EmptyState'
 
 export default function DeadLetters() {
   const { t, i18n } = useTranslation()
@@ -93,8 +94,11 @@ export default function DeadLetters() {
           <button
             onClick={exportCsv}
             disabled={exporting || items.length === 0}
-            className="text-[12px] text-gray-500 hover:text-ink transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px]
+                       text-gray-500 hover:text-ink hover:bg-muted border border-transparent
+                       hover:border-border transition-all duration-150 disabled:opacity-40"
           >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             {t('dl.exportCsv')}
           </button>
         </div>
@@ -126,9 +130,12 @@ export default function DeadLetters() {
       {error && <div className="error-card mb-4 text-[13px]">{error}</div>}
 
       {!loading && items.length === 0 && (
-        <div className="bg-surface rounded-[10px] border border-border px-4 py-8
-                        text-center text-[13px] text-gray-400">
-          {t('dl.empty')}
+        <div className="bg-surface rounded-[10px] border border-border">
+          <EmptyState
+            icon="dead-letters"
+            title={t('dl.empty')}
+            subtitle={t('dl.emptySubtitle')}
+          />
         </div>
       )}
 

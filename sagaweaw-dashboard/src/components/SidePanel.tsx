@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '../api/client'
 import type { RetryingStep, SagaStatusName } from '../api/types'
 import Select from './Select'
+import EmptyState from './EmptyState'
 
 const MIN_W = 200
 const MAX_W = 420
@@ -50,11 +51,20 @@ function SuccessBar({ rate, completed, compensated, failed, label }: {
         {failPct > 0 && <div className="bg-fail  rounded-r-full" style={{ width: `${failPct}%`, transition: 'width 0.6s ease' }} />}
       </div>
       <div className="flex items-center gap-1.5 text-[11px]">
-        <span className="text-ok font-medium">✓ {completed}</span>
+        <span className="text-ok font-medium flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          {completed}
+        </span>
         <span className="text-gray-300">·</span>
-        <span className="text-warn font-medium">↩ {compensated}</span>
+        <span className="text-warn font-medium flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+          {compensated}
+        </span>
         <span className="text-gray-300">·</span>
-        <span className="text-fail font-medium">✕ {failed}</span>
+        <span className="text-fail font-medium flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          {failed}
+        </span>
       </div>
     </div>
   )
@@ -235,7 +245,7 @@ export default function SidePanel({
           </span>
 
           {retrying.length === 0 ? (
-            <span className="text-[12px] text-gray-400">{t('sidebar.retryQueueEmpty')}</span>
+            <EmptyState compact icon="retry" title={t('sidebar.retryQueueEmpty')} subtitle={t('sidebar.retryQueueEmptySubtitle')} />
           ) : (
             <>
               <div className="flex flex-col gap-1.5 overflow-y-auto flex-1 min-h-0">
