@@ -90,6 +90,7 @@ export const api = {
       if (params?.includeReprocessed) q.set('includeReprocessed', 'true')
       return get<DeadLetter[]>(`/dead-letters?${q}`)
     },
+    listBySaga: (sagaId: string) => get<DeadLetter[]>(`/dead-letters?sagaId=${encodeURIComponent(sagaId)}`),
     reprocess:      (id: string)    => post(`/dead-letters/${id}/reprocess`),
     reprocessBatch: (ids: string[]) => post('/dead-letters/reprocess-batch', { ids }),
     exportCsv:      ()              => download('/dead-letters/export', 'dead-letters.csv'),
