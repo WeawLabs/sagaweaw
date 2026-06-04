@@ -8,7 +8,10 @@ const base = process.env.VITE_DASHBOARD_BASE ?? '/'
 export default defineConfig({
   base,
   plugins: [react()],
-  define: { global: 'globalThis' },
+  define: {
+    global: 'globalThis',
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(process.env.npm_package_version ?? '?'),
+  },
   server: {
     port: 8484,
     proxy: {

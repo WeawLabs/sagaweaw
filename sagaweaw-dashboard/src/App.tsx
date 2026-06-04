@@ -11,10 +11,7 @@ import { setUnauthHandler } from './api/client'
 export default function App() {
   const [authed, setAuthed] = useState(() => !!getToken())
 
-  setUnauthHandler(() => {
-    clearToken()
-    setAuthed(false)
-  })
+  setUnauthHandler(() => { clearToken(); setAuthed(false) })
 
   if (!authed) {
     return <TokenGate onAuth={() => setAuthed(true)} />
@@ -26,7 +23,7 @@ export default function App() {
   return (
     <BrowserRouter basename={basename}>
       <div className="min-h-screen bg-canvas">
-        <Header />
+        <Header onLogout={() => setAuthed(false)} />
         <main className="max-w-8xl mx-auto px-4 sm:px-6 pt-4 h-[calc(100vh-3.5rem)] overflow-hidden">
           <Routes>
             <Route path="/"             element={<SagaFeed />} />
