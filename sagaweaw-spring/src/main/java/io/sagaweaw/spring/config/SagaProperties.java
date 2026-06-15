@@ -32,8 +32,20 @@ public record SagaProperties(
 
     public record Observability(
             String token,
+            String previousToken,
             @DefaultValue("true") boolean enabled,
-            Cors cors
+            Cors cors,
+            Auth auth
+    ) {}
+
+    /**
+     * sagaweaw.observability.auth.max-attempts — failed auth attempts before lockout (default: 10).
+     * sagaweaw.observability.auth.lockout-minutes — lockout duration in minutes (default: 15).
+     * Set max-attempts=0 to disable rate limiting entirely.
+     */
+    public record Auth(
+            @DefaultValue("10") int maxAttempts,
+            @DefaultValue("15") int lockoutMinutes
     ) {}
 
     /**
