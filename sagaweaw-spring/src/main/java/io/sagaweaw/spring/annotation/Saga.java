@@ -39,7 +39,7 @@ public @interface Saga {
      * - Only lowercase letters, numbers, and hyphens
      * - Maximum 255 characters (aligned with the database schema)
      * - Description of the business flow — appears on the dashboard
-     * Examples: "order-processing", "pix-payment", "user-onboarding"
+     * Examples: "order-processing", "stripe-payment", "user-onboarding"
      */
     String name();
 }

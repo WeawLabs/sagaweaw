@@ -17,14 +17,14 @@ import java.lang.annotation.Target;
  * provide the sample context. Without it, this annotation is silently ignored.
  *
  * <pre>{@code
- * @Saga("pix-payment")
+ * @Saga("order-payment")
  * @AutoStart
  * @Component
- * public class PixPaymentSaga implements SagaDefinition<Context>, SagaSampler<Context> {
+ * public class OrderPaymentSaga implements SagaDefinition<Context>, SagaSampler<Context> {
  *
  *     @Override
  *     public Context sampleContext() {
- *         return new Context("txn-sample-001", "joao@pix.com", new BigDecimal("150.00"), "user-42");
+ *         return new Context("txn-sample-001", "user@example.com", new BigDecimal("150.00"), "user-42");
  *     }
  *
  *     @Override

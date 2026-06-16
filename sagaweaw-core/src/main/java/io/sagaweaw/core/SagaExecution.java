@@ -11,7 +11,7 @@ import java.util.Objects;
  * the engine for detailed status via SagaEngine.findById().
  *
  * @param sagaId      unique identifier for this execution (UUID)
- * @param sagaName    name of the saga definition (e.g., "pix-payment")
+ * @param sagaName    name of the saga definition (e.g., "order-payment")
  * @param startedAt   when the engine accepted the saga for execution
  * @param idempotent  true when the engine found an existing execution for the given
  *                    IdempotencyKey and returned it instead of creating a new one (ADR-003).
