@@ -23,14 +23,14 @@ No extra containers. No dashboard repo to clone. One environment variable.
 **1. Add the dependency**
 ```kotlin
 // Gradle (Kotlin DSL)
-implementation("dev.sagaweaw:sagaweaw-spring-boot-starter:1.0.12")
+implementation("dev.sagaweaw:sagaweaw-spring-boot-starter:1.0.13")
 ```
 ```xml
 <!-- Maven -->
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Step types are inferred from what you declare:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 <!-- Required for automatic schema creation -->
 <dependency>
@@ -231,7 +231,7 @@ Using Kotlin? Add the `sagaweaw-kotlin` module for idiomatic DSL support — no 
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 ```
 

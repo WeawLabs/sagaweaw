@@ -18,7 +18,8 @@ public record SagaProperties(
         Tracing tracing,
         Alerts alerts,
         Data data,
-        Instance instance
+        Instance instance,
+        Engine engine
 ) {
 
     public record Dashboard(
@@ -32,8 +33,20 @@ public record SagaProperties(
 
     public record Observability(
             String token,
+            String previousToken,
             @DefaultValue("true") boolean enabled,
-            Cors cors
+            Cors cors,
+            Auth auth
+    ) {}
+
+    /**
+     * sagaweaw.observability.auth.max-attempts — failed auth attempts before lockout (default: 10).
+     * sagaweaw.observability.auth.lockout-minutes — lockout duration in minutes (default: 15).
+     * Set max-attempts=0 to disable rate limiting entirely.
+     */
+    public record Auth(
+            @DefaultValue("10") int maxAttempts,
+            @DefaultValue("15") int lockoutMinutes
     ) {}
 
     /**
@@ -126,6 +139,16 @@ public record SagaProperties(
      * Example: sagaweaw.instance.id=${HOSTNAME}
      */
     public record Instance(String id) {}
+
+    /**
+     * sagaweaw.engine.max-context-bytes — maximum serialized size of a saga context in bytes.
+     * Prevents oversized contexts (e.g. unbounded List<String> fields) from causing storage bloat
+     * or degrading serialization performance. Default: 65536 (64 KB).
+     * Set to 0 to disable the check.
+     */
+    public record Engine(
+            @DefaultValue("65536") int maxContextBytes
+    ) {}
 
     public record Alerts(
             String webhookUrl,

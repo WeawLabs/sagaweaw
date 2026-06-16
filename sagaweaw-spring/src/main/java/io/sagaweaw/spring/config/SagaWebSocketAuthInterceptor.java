@@ -1,5 +1,7 @@
 package io.sagaweaw.spring.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageDeliveryException;
@@ -13,10 +15,14 @@ import java.security.MessageDigest;
 
 public class SagaWebSocketAuthInterceptor implements ChannelInterceptor {
 
-    private final String expectedToken;
+    private static final Logger log = LoggerFactory.getLogger(SagaWebSocketAuthInterceptor.class);
 
-    public SagaWebSocketAuthInterceptor(String expectedToken) {
+    private final String expectedToken;
+    private final String previousToken;
+
+    public SagaWebSocketAuthInterceptor(String expectedToken, String previousToken) {
         this.expectedToken = expectedToken;
+        this.previousToken = previousToken;
     }
 
     @Override
@@ -36,7 +42,13 @@ public class SagaWebSocketAuthInterceptor implements ChannelInterceptor {
         String auth = accessor.getFirstNativeHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
             String provided = auth.substring(7);
-            if (constantTimeEquals(expectedToken, provided)) {
+
+            if (constantTimeEquals(expectedToken, provided)) return message;
+
+            if (previousToken != null && !previousToken.isBlank()
+                    && constantTimeEquals(previousToken, provided)) {
+                log.warn("[sagaweaw] WebSocket authenticated with previous token — "
+                        + "remove sagaweaw.observability.previous-token to complete rotation.");
                 return message;
             }
         }
