@@ -23,14 +23,14 @@ Sem containers extras. Sem clonar repositório de dashboard. Uma variável de am
 **1. Adicionar a dependência**
 ```kotlin
 // Gradle (Kotlin DSL)
-implementation("dev.sagaweaw:sagaweaw-spring-boot-starter:1.0.12")
+implementation("dev.sagaweaw:sagaweaw-spring-boot-starter:1.0.13")
 ```
 ```xml
 <!-- Maven -->
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 ```
 
@@ -116,7 +116,7 @@ Os tipos de step são inferidos pelo que você declara:
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-spring-boot-starter</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 <!-- Obrigatório para criação automática do schema -->
 <dependency>
@@ -231,7 +231,7 @@ Usando Kotlin? Adicione o módulo `sagaweaw-kotlin` para DSL idiomática — sem
 <dependency>
     <groupId>dev.sagaweaw</groupId>
     <artifactId>sagaweaw-kotlin</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.13</version>
 </dependency>
 ```
 

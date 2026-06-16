@@ -414,10 +414,12 @@ public class SagaAutoConfiguration {
 
         @Override
         public void addInterceptors(InterceptorRegistry registry) {
-            String token = properties.observability() != null
-                    ? properties.observability().token()
-                    : null;
-            registry.addInterceptor(new ObservabilityTokenInterceptor(token))
+            SagaProperties.Observability obs = properties.observability();
+            String token         = obs != null ? obs.token()         : null;
+            String previousToken = obs != null ? obs.previousToken() : null;
+            int maxAttempts      = (obs != null && obs.auth() != null) ? obs.auth().maxAttempts()   : 10;
+            int lockoutMinutes   = (obs != null && obs.auth() != null) ? obs.auth().lockoutMinutes() : 15;
+            registry.addInterceptor(new ObservabilityTokenInterceptor(token, previousToken, maxAttempts, lockoutMinutes))
                     .addPathPatterns("/api/sagas/**", "/api/dead-letters/**", "/api/grafana-dashboard");
         }
     }
@@ -464,10 +466,10 @@ public class SagaAutoConfiguration {
         @Override
         public void configureClientInboundChannel(
                 org.springframework.messaging.simp.config.ChannelRegistration registration) {
-            String token = properties != null && properties.observability() != null
-                    ? properties.observability().token()
-                    : null;
-            registration.interceptors(new SagaWebSocketAuthInterceptor(token));
+            SagaProperties.Observability obs = properties != null ? properties.observability() : null;
+            String token         = obs != null ? obs.token()         : null;
+            String previousToken = obs != null ? obs.previousToken() : null;
+            registration.interceptors(new SagaWebSocketAuthInterceptor(token, previousToken));
         }
     }
 }

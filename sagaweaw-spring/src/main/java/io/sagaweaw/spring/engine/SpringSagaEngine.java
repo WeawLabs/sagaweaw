@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.sagaweaw.spring.config.SagaProperties;
 import io.sagaweaw.core.IdempotencyKey;
+import io.sagaweaw.core.SagaContextTooLargeException;
 import io.sagaweaw.core.SagaStatus;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -199,8 +200,10 @@ public class SpringSagaEngine implements SagaEngine {
     private <C extends SagaContext> SagaExecution doStart(
             SagaFlow<C> flow, C context, String idempotencyKey) {
 
-        SagaEntity saga = SagaEntity.create(
-                flow.sagaName(), mapper.toJson(context), idempotencyKey);
+        String contextJson = mapper.toJson(context);
+        enforceContextSizeLimit(flow.sagaName(), contextJson);
+
+        SagaEntity saga = SagaEntity.create(flow.sagaName(), contextJson, idempotencyKey);
         saga.setInstanceId(effectiveInstanceId());
         saga = sagaRepository.save(saga);
 
@@ -424,6 +427,15 @@ public class SpringSagaEngine implements SagaEngine {
                 contextSnapshot);
 
         deadLetterRepository.save(dead);
+    }
+
+    private void enforceContextSizeLimit(String sagaName, String contextJson) {
+        if (contextJson == null) return;
+        SagaProperties.Engine engine = properties.engine();
+        int maxBytes = (engine != null && engine.maxContextBytes() > 0) ? engine.maxContextBytes() : 0;
+        if (maxBytes > 0 && contextJson.length() > maxBytes) {
+            throw new SagaContextTooLargeException(sagaName, maxBytes, contextJson.length());
+        }
     }
 
     private SagaEntity findEntityById(String sagaId) {
