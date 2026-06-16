@@ -33,8 +33,8 @@ public interface SagaContext {
      *
      * Examples:
      *   "order #48291"
-     *   "PIX R$150.00 → João Silva"
-     *   "onboarding CPF 123.456.789-00"
+     *   "payment $150.00 → john@acme.com"
+     *   "user onboarding user-7842"
      */
     default Optional<String> businessKey() {
         return Optional.empty();

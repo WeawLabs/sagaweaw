@@ -12,7 +12,7 @@ import java.util.Objects;
  * exposed by the dashboard REST API as an observability DTO.
  *
  * @param id            UUID of this saga execution
- * @param name          saga definition name (e.g., "pix-payment")
+ * @param name          saga definition name (e.g., "order-payment")
  * @param status        current saga state machine state
  * @param contextJson   business context serialized as JSON (deserialization belongs in sagaweaw-spring)
  * @param steps         ordered list of step snapshots
