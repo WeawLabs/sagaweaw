@@ -4,14 +4,14 @@ Thank you for your interest in contributing!
 
 ## Reporting bugs
 
-Open an [issue](https://github.com/amosjuda/sagaweaw/issues/new?template=bug_report.md) with:
+Open an [issue](https://github.com/WeawLabs/sagaweaw/issues/new?template=bug_report.md) with:
 - Sagaweaw version
 - Spring Boot version and database (PostgreSQL / MySQL / H2)
 - Minimal reproduction (saga class + stack trace)
 
 ## Suggesting features
 
-Open an [issue](https://github.com/amosjuda/sagaweaw/issues/new?template=feature_request.md) describing the use case first. Large changes should be discussed before a PR is opened.
+Open an [issue](https://github.com/WeawLabs/sagaweaw/issues/new?template=feature_request.md) describing the use case first. Large changes should be discussed before a PR is opened.
 
 ## Submitting a pull request
 
@@ -30,7 +30,7 @@ Open an [issue](https://github.com/amosjuda/sagaweaw/issues/new?template=feature
 ## Local setup
 
 ```bash
-git clone https://github.com/amosjuda/sagaweaw.git
+git clone https://github.com/WeawLabs/sagaweaw.git
 cd sagaweaw
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./mvnw test          # unit tests
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./mvnw verify         # + integration tests (requires Docker)

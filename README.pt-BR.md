@@ -5,12 +5,12 @@
 **Orquestração de sagas para Spring Boot. Sem novos servidores. Sem novos conceitos. Só o seu banco de dados.**
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.sagaweaw/sagaweaw-spring-boot-starter?color=blue)](https://central.sonatype.com/artifact/dev.sagaweaw/sagaweaw-spring-boot-starter)
-[![CI](https://github.com/amosjuda/sagaweaw/actions/workflows/ci.yml/badge.svg)](https://github.com/amosjuda/sagaweaw/actions)
+[![CI](https://github.com/WeawLabs/sagaweaw/actions/workflows/ci.yml/badge.svg)](https://github.com/WeawLabs/sagaweaw/actions)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17+-orange)](https://openjdk.org/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-suportado-7F52FF)](https://kotlinlang.org/)
 
-📖 [Documentação](https://doc.sagaweaw.dev) · [README in English](README.md) · [Discussions](https://github.com/amosjuda/sagaweaw/discussions) · [Issues](https://github.com/amosjuda/sagaweaw/issues)
+📖 [Documentação](https://doc.sagaweaw.dev) · [README in English](README.md) · [Discussions](https://github.com/WeawLabs/sagaweaw/discussions) · [Issues](https://github.com/WeawLabs/sagaweaw/issues)
 
 </div>
 
@@ -419,8 +419,8 @@ Gere a classe Saga completa e mostre como disparar ela.
 
 O Sagaweaw está em desenvolvimento ativo e adoraríamos sua ajuda. Seja um bug fix, uma ideia de feature nova, ou só feedback de quem usou em produção — toda contribuição importa.
 
-- 🐛 **Encontrou um bug?** [Abra uma issue](https://github.com/amosjuda/sagaweaw/issues/new?template=bug_report.md)
-- 💡 **Tem uma ideia?** [Inicie uma discussão](https://github.com/amosjuda/sagaweaw/discussions)
+- 🐛 **Encontrou um bug?** [Abra uma issue](https://github.com/WeawLabs/sagaweaw/issues/new?template=bug_report.md)
+- 💡 **Tem uma ideia?** [Inicie uma discussão](https://github.com/WeawLabs/sagaweaw/discussions)
 - 🔧 **Quer contribuir com código?** Leia [CONTRIBUTING.md](CONTRIBUTING.md) — o setup leva 5 minutos
 
 ---
