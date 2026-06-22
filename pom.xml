@@ -27,7 +27,7 @@
 
     <name>Sagaweaw</name>
     <description>Distributed saga orchestration for Spring Boot</description>
-    <url>https://github.com/amosjuda/sagaweaw</url>
+    <url>https://github.com/WeawLabs/sagaweaw</url>
 
     <licenses>
         <license>
@@ -45,9 +45,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/amosjuda/sagaweaw.git</connection>
-        <developerConnection>scm:git:ssh://github.com/amosjuda/sagaweaw.git</developerConnection>
-        <url>https://github.com/amosjuda/sagaweaw</url>
+        <connection>scm:git:git://github.com/WeawLabs/sagaweaw.git</connection>
+        <developerConnection>scm:git:ssh://github.com/WeawLabs/sagaweaw.git</developerConnection>
+        <url>https://github.com/WeawLabs/sagaweaw</url>
         <tag>HEAD</tag>
     </scm>
 
