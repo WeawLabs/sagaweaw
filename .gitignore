@@ -1,4 +1,6 @@
 HELP.md
+SAGAWEAW_RELEASE_GUIDE.md
+sagaweaver-roadmap.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
